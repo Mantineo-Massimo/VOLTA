@@ -16,9 +16,6 @@ export default function Account() {
     const [showEventModal, setShowEventModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState<any>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [isScanning, setIsScanning] = useState(false);
-    const [scanResult, setScanResult] = useState<"success" | "error" | null>(null);
-    const [manualCode, setManualCode] = useState("");
     const [events, setEvents] = useState([
         { id: 1, name: "VŌLTA Premiere", date: "4 APR 26", loc: "MESSINA", regs: 248, desc: "Evento di lancio esclusivo.", time: "22:00", dj: "CLARK", genre: "INDUSTRIAL", dresscode: true, entryType: "INVITE ONLY", isSoldOut: true, regLimit: 250 },
         { id: 2, name: "TECHNO CLASH", date: "10 APR 26", loc: "TAORMINA", regs: 156, desc: "La sfida definitiva.", time: "23:00", dj: "KØDE", genre: "TECHNO", dresscode: false, entryType: "DOOR TAX", isSoldOut: false, regLimit: 300 },
@@ -148,214 +145,122 @@ export default function Account() {
                 </div>
 
                 {role === "admin" ? (
-                    <div className="space-y-12">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                            {/* Event List for Admins */}
-                            <div className="lg:col-span-7 flex flex-col gap-10">
-                                <div className="flex justify-between items-center bg-white/[0.02] p-8 border border-white/5">
-                                    <h2 className="text-2xl font-bold uppercase tracking-tighter">Eventi Globali</h2>
-                                    <div className="flex gap-4">
-                                        <button
-                                            onClick={() => setIsScanning(true)}
-                                            className="border border-gold text-gold text-[10px] font-bold uppercase px-6 py-3 tracking-widest hover:bg-gold hover:text-black transition-all transform active:scale-95 flex items-center gap-2"
-                                        >
-                                            <QrCode size={14} /> SCAN QR
-                                        </button>
-                                        <button
-                                            onClick={() => { setEditingEvent(null); setShowEventModal(true); }}
-                                            className="bg-gold text-black text-[10px] font-bold uppercase px-6 py-3 tracking-widest hover:invert transition-all transform active:scale-95"
-                                        >
-                                            NUOVO EVENTO
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col gap-4">
-                                    {events.map((event) => (
-                                        <div
-                                            key={event.id}
-                                            onClick={() => setSelectedEventId(event.id)}
-                                            className={`p-8 border transition-all cursor-pointer group ${selectedEventId === event.id ? 'border-gold bg-gold/5' : 'border-white/5 bg-white/[0.01] hover:border-white/20'}`}
-                                        >
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gold mb-2">{event.date} • {event.loc}</p>
-                                                    <h3 className="text-2xl font-bold uppercase tracking-tighter">{event.name}</h3>
-                                                    <p className="text-[10px] uppercase tracking-widest text-white/40 mt-3">{event.regs} Registrazioni Attive</p>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); setEditingEvent(event); setShowEventModal(true); }}
-                                                        className="p-2 border border-white/10 hover:border-white/40 text-white/40 hover:text-white transition-all font-bold text-xs"
-                                                    >
-                                                        EDIT
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setEvents(prev => prev.filter(ev => ev.id !== event.id));
-                                                            if (selectedEventId === event.id) setSelectedEventId(null);
-                                                        }}
-                                                        className="p-2 border border-white/10 hover:border-red-500/50 text-white/40 hover:text-red-500 transition-all font-bold text-xs"
-                                                    >
-                                                        DEL
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                        {/* Event List for Admins */}
+                        <div className="lg:col-span-7 flex flex-col gap-10">
+                            <div className="flex justify-between items-center bg-white/[0.02] p-8 border border-white/5">
+                                <h2 className="text-2xl font-bold uppercase tracking-tighter">Eventi Globali</h2>
+                                <button
+                                    onClick={() => { setEditingEvent(null); setShowEventModal(true); }}
+                                    className="bg-gold text-black text-[10px] font-bold uppercase px-6 py-3 tracking-widest hover:invert transition-all transform active:scale-95"
+                                >
+                                    NUOVO EVENTO
+                                </button>
                             </div>
 
-                            <div className="lg:col-span-5 border border-white/10 bg-white/[0.01] flex flex-col p-8 md:p-10 min-h-[600px] relative overflow-hidden">
-                                {!selectedEventId ? (
-                                    <div className="flex-grow flex flex-col items-center justify-center text-center opacity-20">
-                                        <Search size={48} strokeWidth={1} className="mb-6" />
-                                        <p className="text-sm uppercase tracking-widest">Seleziona un evento per gestire le registrazioni</p>
+                            <div className="flex flex-col gap-4">
+                                {events.map((event) => (
+                                    <div
+                                        key={event.id}
+                                        onClick={() => setSelectedEventId(event.id)}
+                                        className={`p-8 border transition-all cursor-pointer group ${selectedEventId === event.id ? 'border-gold bg-gold/5' : 'border-white/5 bg-white/[0.01] hover:border-white/20'}`}
+                                    >
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gold mb-2">{event.date} • {event.loc}</p>
+                                                <h3 className="text-2xl font-bold uppercase tracking-tighter">{event.name}</h3>
+                                                <p className="text-[10px] uppercase tracking-widest text-white/40 mt-3">{event.regs} Registrazioni Attive</p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setEditingEvent(event); setShowEventModal(true); }}
+                                                    className="p-2 border border-white/10 hover:border-white/40 text-white/40 hover:text-white transition-all"
+                                                >
+                                                    <Activity size={14} />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setEvents(prev => prev.filter(ev => ev.id !== event.id));
+                                                        if (selectedEventId === event.id) setSelectedEventId(null);
+                                                    }}
+                                                    className="p-2 border border-white/10 hover:border-red-500/50 text-white/40 hover:text-red-500 transition-all"
+                                                >
+                                                    <LogOut size={14} className="rotate-90 text-red-500/50 group-hover:text-red-500" />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                ) : (
-                                    <AnimatePresence mode="wait">
-                                        <motion.div
-                                            key={selectedEventId}
-                                            initial={{ opacity: 0, x: 20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: -20 }}
-                                            className="h-full flex flex-col"
-                                        >
-                                            <div className="mb-8 flex justify-between items-end border-b border-white/10 pb-6">
-                                                <h3 className="text-xl font-bold uppercase tracking-tighter">Registrazioni Hub</h3>
-                                                <span className="text-[9px] font-bold uppercase text-gold">Live Syncing</span>
-                                            </div>
-
-                                            <div className="space-y-6 flex-grow ">
-                                                <div className="relative group">
-                                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-gold transition-colors" size={14} />
-                                                    <input
-                                                        type="text"
-                                                        placeholder="CERCA IN LISTA..."
-                                                        className="w-full bg-black border border-white/10 px-12 py-3 text-[10px] font-bold uppercase tracking-widest focus:outline-none focus:border-gold transition-all text-white"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                                                    {(selectedEventId === 1 ? [
-                                                        { name: "Marco Rossi", email: "m.rossi@v-member.it", status: "WEB" },
-                                                        { name: "Luca Veronese", email: "l.vero@gmail.com", status: "PR-A" },
-                                                        { name: "Chiara Belli", email: "chiara.b@v-member.it", status: "GOLD" },
-                                                        { name: "Sandro Galli", email: "s.galli@hotmail.it", status: "WEB" }
-                                                    ] : selectedEventId === 2 ? [
-                                                        { name: "Alessia Forte", email: "a.forte@v-member.it", status: "VIP" },
-                                                        { name: "Dario Longo", email: "d.longo@gmail.com", status: "WEB" }
-                                                    ] : [
-                                                        { name: "Giusy Mare", email: "g.mare@v-member.it", status: "WEB" }
-                                                    ]).map((reg, idx) => (
-                                                        <div key={idx} className="p-4 border border-white/5 bg-white/[0.02] flex items-center justify-between group hover:border-white/20 transition-all">
-                                                            <div>
-                                                                <p className="font-bold uppercase text-xs tracking-tighter">{reg.name}</p>
-                                                                <p className="text-[10px] text-white/20">{reg.email}</p>
-                                                            </div>
-                                                            <span className="text-[8px] font-bold px-2 py-1 bg-white/5 text-white/40 group-hover:bg-gold group-hover:text-black transition-colors">{reg.status}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            <div className="mt-12 flex gap-4">
-                                                <button className="flex-grow border border-white/10 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 transition-all italic">EXPORT CSV</button>
-                                                <button className="flex-grow border border-white/10 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 transition-all italic">SEND NOTIF</button>
-                                            </div>
-                                        </motion.div>
-                                    </AnimatePresence>
-                                )}
+                                ))}
                             </div>
                         </div>
 
-                        <AnimatePresence>
-                            {isScanning && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center p-6 backdrop-blur-xl"
-                                >
-                                    <div className="absolute top-10 flex justify-between w-full px-12 items-center">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                            <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-white/40 italic">Live Admin Scanner</span>
+                        {/* Registration View for Selected Event */}
+                        <div className="lg:col-span-5 border border-white/10 bg-white/[0.01] flex flex-col p-8 md:p-10 min-h-[600px] relative overflow-hidden">
+                            {!selectedEventId ? (
+                                <div className="flex-grow flex flex-col items-center justify-center text-center opacity-20">
+                                    <Search size={48} strokeWidth={1} className="mb-6" />
+                                    <p className="text-sm uppercase tracking-widest">Seleziona un evento per gestire le registrazioni</p>
+                                </div>
+                            ) : (
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={selectedEventId}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        className="h-full flex flex-col"
+                                    >
+                                        <div className="mb-8 flex justify-between items-end border-b border-white/10 pb-6">
+                                            <h3 className="text-xl font-bold uppercase tracking-tighter">Registrazioni Hub</h3>
+                                            <span className="text-[9px] font-bold uppercase text-gold">Live Syncing</span>
                                         </div>
-                                        <button onClick={() => { setIsScanning(false); setScanResult(null); }} className="text-white/20 hover:text-white transition-colors">
-                                            <X size={32} strokeWidth={1} />
-                                        </button>
-                                    </div>
 
-                                    {scanResult === "success" ? (
-                                        <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="text-center space-y-8 animate-in zoom-in duration-500 text-white">
-                                            <div className="w-40 h-40 rounded-full border-[10px] border-gold flex items-center justify-center mx-auto shadow-[0_0_80px_rgba(255,184,0,0.4)] bg-gold/10">
-                                                <CheckCircle2 size={80} className="text-gold" />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-6xl font-bold uppercase tracking-tighter italic">Access Granted.</h2>
-                                                <p className="text-gold uppercase font-bold tracking-[0.4em] mt-2">VŌLTA Gold Member • Entry #214</p>
-                                            </div>
-                                            <button onClick={() => setScanResult(null)} className="mt-12 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40 hover:text-gold transition-colors">Scan Next</button>
-                                        </motion.div>
-                                    ) : scanResult === "error" ? (
-                                        <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="text-center space-y-8 text-white">
-                                            <div className="w-40 h-40 rounded-full border-[10px] border-red-500 flex items-center justify-center mx-auto shadow-[0_0_80px_rgba(239,68,68,0.4)] bg-red-900/20">
-                                                <X size={80} className="text-red-500" />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-6xl font-bold uppercase tracking-tighter italic text-red-500">Access Denied.</h2>
-                                                <p className="text-white/40 uppercase font-bold tracking-[0.4em] mt-2">Invalid Pass or Expired Session</p>
-                                            </div>
-                                            <button onClick={() => setScanResult(null)} className="mt-12 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40 hover:text-white transition-colors">Try Again</button>
-                                        </motion.div>
-                                    ) : (
-                                        <div className="max-w-md w-full space-y-12">
-                                            <div className="relative aspect-square w-full border border-white/10 rounded-3xl overflow-hidden bg-white/[0.02] shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-                                                <div className="absolute inset-0 bg-[url('/assets/noise.png')] opacity-10" />
-                                                <motion.div
-                                                    animate={{ top: ['0%', '100%', '0%'] }}
-                                                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                                                    className="absolute left-0 w-full h-[2px] bg-gold shadow-[0_0_20px_rgba(255,184,0,0.8)] z-10"
+                                        <div className="space-y-6 flex-grow ">
+                                            <div className="relative group">
+                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-gold transition-colors" size={14} />
+                                                <input
+                                                    type="text"
+                                                    placeholder="CERCA IN LISTA..."
+                                                    className="w-full bg-black border border-white/10 px-12 py-3 text-[10px] font-bold uppercase tracking-widest focus:outline-none focus:border-gold transition-all"
                                                 />
-                                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-2 border-gold/40 border-dashed rounded-2xl animate-pulse" />
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <QrCode size={120} className="text-white/5 opacity-50" />
-                                                </div>
                                             </div>
 
-                                            <div className="space-y-6">
-                                                <div className="flex items-center gap-4 text-white/20">
-                                                    <div className="h-[1px] flex-grow bg-white/10" />
-                                                    <span className="text-[9px] font-bold uppercase tracking-[0.5em] whitespace-nowrap">Simulator Module</span>
-                                                    <div className="h-[1px] flex-grow bg-white/10" />
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <button onClick={() => setScanResult("success")} className="bg-gold text-black p-5 font-bold uppercase text-[10px] tracking-widest hover:scale-[1.02] active:scale-95 transition-all">Mock Success</button>
-                                                    <button onClick={() => setScanResult("error")} className="border border-white/10 text-white/40 p-5 font-bold uppercase text-[10px] tracking-widest hover:bg-red-500/10 hover:border-red-500 hover:text-red-500 transition-all">Mock Error</button>
-                                                </div>
-                                                <div className="relative group">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="CODE MANUAL ENTRY..."
-                                                        value={manualCode}
-                                                        onChange={(e) => setManualCode(e.target.value)}
-                                                        className="w-full bg-black border border-white/10 p-5 text-[10px] font-bold uppercase tracking-[0.3em] outline-none focus:border-gold transition-all text-white"
-                                                    />
-                                                    <button onClick={() => setScanResult("success")} className="absolute right-4 top-1/2 -translate-y-1/2 text-gold group-focus-within:translate-x-1 transition-all">
-                                                        <ArrowRight size={20} />
-                                                    </button>
-                                                </div>
+                                            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                                {(selectedEventId === 1 ? [
+                                                    { name: "Marco Rossi", email: "m.rossi@v-member.it", status: "WEB" },
+                                                    { name: "Luca Veronese", email: "l.vero@gmail.com", status: "PR-A" },
+                                                    { name: "Chiara Belli", email: "chiara.b@v-member.it", status: "GOLD" },
+                                                    { name: "Sandro Galli", email: "s.galli@hotmail.it", status: "WEB" }
+                                                ] : selectedEventId === 2 ? [
+                                                    { name: "Alessia Forte", email: "a.forte@v-member.it", status: "VIP" },
+                                                    { name: "Dario Longo", email: "d.longo@gmail.com", status: "WEB" }
+                                                ] : [
+                                                    { name: "Giusy Mare", email: "g.mare@v-member.it", status: "WEB" }
+                                                ]).map((reg, idx) => (
+                                                    <div key={idx} className="p-4 border border-white/5 bg-white/[0.02] flex items-center justify-between group hover:border-white/20 transition-all">
+                                                        <div>
+                                                            <p className="font-bold uppercase text-xs tracking-tighter">{reg.name}</p>
+                                                            <p className="text-[10px] text-white/20">{reg.email}</p>
+                                                        </div>
+                                                        <span className="text-[8px] font-bold px-2 py-1 bg-white/5 text-white/40 group-hover:bg-gold group-hover:text-black transition-colors">{reg.status}</span>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
-                                    )}
-                                </motion.div>
+
+                                        <div className="mt-12 flex gap-4">
+                                            <button className="flex-grow border border-white/10 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 transition-all italic">EXPORT CSV</button>
+                                            <button className="flex-grow border border-white/10 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 transition-all italic">SEND NOTIF</button>
+                                        </div>
+                                    </motion.div>
+                                </AnimatePresence>
                             )}
-                        </AnimatePresence>
+                        </div>
                     </div>
                 ) : role === "user" ? (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                        {/* Left Column: QR Code & Status */}
                         <div className="lg:col-span-4 flex flex-col gap-10">
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
@@ -363,10 +268,13 @@ export default function Account() {
                                 className="relative aspect-square max-w-[340px] mx-auto w-full group p-[2px] rounded-sm bg-gradient-to-tr from-gold/40 via-gold/10 to-transparent"
                             >
                                 <div className="w-full h-full bg-black flex flex-col items-center justify-center p-12 relative overflow-hidden">
+                                    {/* Rotating Background */}
                                     <div className="absolute inset-0 opacity-10 blur-3xl pointer-events-none bg-gold" />
+
                                     <div className="relative z-10 bg-white p-4 rounded-sm shadow-[0_0_50px_rgba(255,184,0,0.2)]">
                                         <QrCode size={180} className="text-black" strokeWidth={1.5} />
                                     </div>
+
                                     <div className="mt-8 text-center relative z-10">
                                         <p className="text-gold font-bold text-xl uppercase tracking-tighter">VŌLTA Premiere</p>
                                         <p className="text-[10px] uppercase tracking-[0.2em] font-medium text-white/40 mt-1">4 APR 26 • MESSINA</p>
@@ -386,6 +294,7 @@ export default function Account() {
                             </div>
                         </div>
 
+                        {/* Right Column: Information & History */}
                         <div className="lg:col-span-8 flex flex-col gap-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="p-8 border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors relative group">
@@ -425,6 +334,7 @@ export default function Account() {
                     </div>
                 ) : (
                     <div className="flex flex-col gap-12">
+                        {/* Venue Metrics Overview */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             {[
                                 { label: "Prenotati", value: "248", trend: "+12%" },
@@ -450,6 +360,7 @@ export default function Account() {
                             ))}
                         </div>
 
+                        {/* Management Table Area */}
                         <div className="bg-white/[0.01] border border-white/10 p-1 md:p-10">
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
                                 <h3 className="text-3xl font-bold uppercase tracking-tighter">Real-Time Access List</h3>
@@ -458,7 +369,7 @@ export default function Account() {
                                     <input
                                         type="text"
                                         placeholder="CERCA NOMINATIVO O ID..."
-                                        className="w-full bg-black border border-white/10 px-12 py-3 text-[10px] font-bold uppercase tracking-widest focus:outline-none focus:border-gold transition-all text-white"
+                                        className="w-full bg-black border border-white/10 px-12 py-3 text-[10px] font-bold uppercase tracking-widest focus:outline-none focus:border-gold transition-all"
                                     />
                                 </div>
                             </div>
@@ -512,154 +423,174 @@ export default function Account() {
                 )}
             </div>
 
+            {/* Event Management Modal */}
             <AnimatePresence>
-                {
-                    showEventModal && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                                className="bg-black border border-white/10 p-10 max-w-5xl w-full relative overflow-hidden"
-                            >
-                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-50" />
+                {showEventModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="bg-black border border-white/10 p-10 max-w-5xl w-full relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-50" />
 
-                                <div className="flex justify-between items-end mb-10">
-                                    <h2 className="text-4xl font-bold uppercase tracking-tighter italic">
-                                        {editingEvent ? "Modifica Evento" : "Nuovo Evento"}
-                                    </h2>
-                                    <button
-                                        onClick={() => setShowEventModal(false)}
-                                        className="bg-white/5 hover:bg-white/10 p-2 rounded-full transition-all"
-                                    >
-                                        <X size={20} />
-                                    </button>
-                                </div>
-
-                                <form className="grid grid-cols-1 md:grid-cols-3 gap-10 h-[65vh] overflow-y-auto pr-4 custom-scrollbar" onSubmit={(e) => {
-                                    e.preventDefault();
-                                    const formData = new FormData(e.currentTarget);
-                                    const newEventData = {
-                                        id: editingEvent ? editingEvent.id : Date.now(),
-                                        name: formData.get('name') as string,
-                                        date: formData.get('date') as string,
-                                        loc: formData.get('loc') as string,
-                                        time: formData.get('time') as string,
-                                        desc: formData.get('desc') as string,
-                                        dj: formData.get('dj') as string,
-                                        genre: formData.get('genre') as string,
-                                        dresscode: formData.get('dresscode') === 'on',
-                                        entryType: formData.get('entryType') as string,
-                                        isSoldOut: formData.get('isSoldOut') === 'on',
-                                        regLimit: parseInt(formData.get('regLimit') as string) || 0,
-                                        regs: editingEvent ? editingEvent.regs : 0,
-                                        image: imagePreview || editingEvent?.image || "/assets/DSC_0036.JPG"
-                                    };
-
-                                    if (editingEvent) {
-                                        setEvents(prev => prev.map(ev => ev.id === editingEvent.id ? newEventData : ev));
-                                    } else {
-                                        setEvents(prev => [...prev, newEventData]);
-                                    }
-                                    setShowEventModal(false);
-                                    setImagePreview(null);
-                                }}>
-                                    {/* Left Column: Image Upload */}
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Cover Evento (Ratio 4:5)</label>
-                                        <div
-                                            className="relative aspect-[4/5] bg-white/[0.02] border border-white/10 hover:border-gold/50 transition-all group flex flex-col items-center justify-center cursor-pointer overflow-hidden"
-                                            onClick={() => document.getElementById('imageFile')?.click()}
-                                        >
-                                            {(imagePreview || editingEvent?.image) ? (
-                                                <>
-                                                    <img
-                                                        src={imagePreview || editingEvent?.image}
-                                                        alt="Preview"
-                                                        className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
-                                                    />
-                                                    <div className="relative z-10 flex flex-col items-center gap-2 transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                                                        <Upload size={32} className="text-gold" />
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-white">Cambia Immagine</span>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <div className="flex flex-col items-center gap-4 text-white/20 group-hover:text-gold transition-colors">
-                                                    <ImageIcon size={48} strokeWidth={1} />
-                                                    <div className="text-center">
-                                                        <p className="text-[10px] font-bold uppercase tracking-widest">Trascina o Clicca</p>
-                                                        <p className="text-[8px] uppercase tracking-tighter mt-1">Formato 4:5 Consigliato</p>
-                                                    </div>
-                                                </div>
-                                            )}
-                                                <input type="checkbox" className="hidden" />
-                                                <span className="text-[10px] font-bold uppercase">Richiesto</span>
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Entry & Capacity</label>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <select className="w-full bg-white/[0.02] border border-white/5 p-4 text-[11px] font-bold uppercase tracking-widest focus:border-gold outline-none appearance-none">
-                                                <option className="bg-black">Guestlist Only</option>
-                                                <option className="bg-black">Open Registration</option>
-                                                <option className="bg-black">Private/Gold</option>
-                                            </select>
-                                            <input type="number" placeholder="LIMIT REGS" className="w-full bg-white/[0.02] border border-white/5 p-4 text-[11px] font-bold uppercase tracking-widest focus:border-gold outline-none" />
-                                        </div>
-                                        <label className="flex items-center gap-3 cursor-pointer group p-4 border border-white/5 hover:bg-red-500/5 transition-all">
-                                            <div className="w-5 h-5 border border-white/20 group-hover:border-red-500 transition-colors flex items-center justify-center">
-                                                <div className="w-3 h-3 bg-red-500 opacity-0 group-has-[:checked]:opacity-100 transition-opacity animate-pulse" />
-                                            </div>
-                                            <input type="checkbox" className="hidden" />
-                                            <span className="text-[10px] font-bold uppercase tracking-widest">Mark as SOLD OUT</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                {/* Right: Upload */}
-                                <div className="space-y-8 flex flex-col">
-                                    <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Event Artwork (4:5 Ratio)</label>
-                                    <div className="flex-grow border-2 border-dashed border-white/10 hover:border-gold/40 transition-all flex flex-col items-center justify-center p-12 text-center group bg-white/[0.01]">
-                                        <Upload size={48} strokeWidth={1} className="text-white/20 group-hover:text-gold transition-colors mb-6" />
-                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-2">DRAG & DROP IMAGE</p>
-                                        <p className="text-[9px] text-white/20 uppercase">Recommended: 1080x1350px</p>
-                                        <button className="mt-8 border border-white/10 px-8 py-3 text-[9px] font-bold uppercase tracking-widest hover:bg-white/5 transition-all">Sfoglia Files</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-16 flex justify-end gap-6 border-t border-white/10 pt-12">
+                            <div className="flex justify-between items-end mb-10">
+                                <h2 className="text-4xl font-bold uppercase tracking-tighter italic">
+                                    {editingEvent ? "Modifica Evento" : "Nuovo Evento"}
+                                </h2>
                                 <button
                                     onClick={() => setShowEventModal(false)}
-                                    className="text-[10px] font-bold uppercase tracking-widest px-8 py-4 text-white/40 hover:text-white transition-colors"
+                                    className="bg-white/5 hover:bg-white/10 p-2 rounded-full transition-all"
                                 >
-                                    ANNULLA
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const title = (document.getElementById('event-title') as HTMLInputElement).value;
-                                        const date = (document.getElementById('event-date') as HTMLInputElement).value;
-                                        const loc = (document.getElementById('event-loc') as HTMLInputElement).value;
-
-                                        if (editingEvent) {
-                                            setEvents(prev => prev.map(ev => ev.id === editingEvent.id ? { ...ev, name: title, date, loc } : ev));
-                                        } else {
-                                            setEvents(prev => [...prev, { id: prev.length + 1, name: title || "New Event", date: date || "TBA", loc: loc || "TBA", regs: 0 }]);
-                                        }
-                                        setShowEventModal(false);
-                                    }}
-                                    className="bg-gold text-black text-[10px] font-bold uppercase px-12 py-4 tracking-[0.3em] hover:invert transition-all transform active:scale-95 shadow-[0_0_40px_rgba(255,184,0,0.2)]"
-                                >
-                                    {editingEvent ? 'SALVA MODIFICHE' : 'PUBBLICA EVENTO'}
+                                    <X size={20} />
                                 </button>
                             </div>
-                        </motion.div >
-                    </motion.div >
-                )
-}
-            </AnimatePresence >
-        </div >
+
+                            <form className="grid grid-cols-1 md:grid-cols-3 gap-10 h-[65vh] overflow-y-auto pr-4 custom-scrollbar" onSubmit={(e) => {
+                                e.preventDefault();
+                                const formData = new FormData(e.currentTarget);
+                                const newEventData = {
+                                    id: editingEvent ? editingEvent.id : Date.now(),
+                                    name: formData.get('name') as string,
+                                    date: formData.get('date') as string,
+                                    loc: formData.get('loc') as string,
+                                    time: formData.get('time') as string,
+                                    desc: formData.get('desc') as string,
+                                    dj: formData.get('dj') as string,
+                                    genre: formData.get('genre') as string,
+                                    dresscode: formData.get('dresscode') === 'on',
+                                    entryType: formData.get('entryType') as string,
+                                    isSoldOut: formData.get('isSoldOut') === 'on',
+                                    regLimit: parseInt(formData.get('regLimit') as string) || 0,
+                                    regs: editingEvent ? editingEvent.regs : 0,
+                                    image: imagePreview || editingEvent?.image || "/assets/DSC_0036.JPG"
+                                };
+
+                                if (editingEvent) {
+                                    setEvents(prev => prev.map(ev => ev.id === editingEvent.id ? newEventData : ev));
+                                } else {
+                                    setEvents(prev => [...prev, newEventData]);
+                                }
+                                setShowEventModal(false);
+                                setImagePreview(null);
+                            }}>
+                                {/* Left Column: Image Upload */}
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Cover Evento (Ratio 4:5)</label>
+                                    <div
+                                        className="relative aspect-[4/5] bg-white/[0.02] border border-white/10 hover:border-gold/50 transition-all group flex flex-col items-center justify-center cursor-pointer overflow-hidden"
+                                        onClick={() => document.getElementById('imageFile')?.click()}
+                                    >
+                                        {(imagePreview || editingEvent?.image) ? (
+                                            <>
+                                                <img
+                                                    src={imagePreview || editingEvent?.image}
+                                                    alt="Preview"
+                                                    className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
+                                                />
+                                                <div className="relative z-10 flex flex-col items-center gap-2 transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                                    <Upload size={32} className="text-gold" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-white">Cambia Immagine</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex flex-col items-center gap-4 text-white/20 group-hover:text-gold transition-colors">
+                                                <ImageIcon size={48} strokeWidth={1} />
+                                                <div className="text-center">
+                                                    <p className="text-[10px] font-bold uppercase tracking-widest">Trascina o Clicca</p>
+                                                    <p className="text-[8px] uppercase tracking-tighter mt-1">Formato 4:5 Consigliato</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <input
+                                            id="imageFile"
+                                            name="imageFile"
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    setImagePreview(URL.createObjectURL(file));
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                    <p className="text-[9px] text-white/30 uppercase tracking-widest leading-relaxed">
+                                        L'immagine verrà ritagliata automaticamente per adattarsi al grid brutalist della pagina eventi.
+                                    </p>
+                                </div>
+
+                                {/* Center & Right Columns: Fields */}
+                                <div className="md:col-span-2 space-y-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Nome Evento</label>
+                                            <input required name="name" defaultValue={editingEvent?.name} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Location</label>
+                                            <input required name="loc" defaultValue={editingEvent?.loc} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">DJ Master</label>
+                                            <input required name="dj" defaultValue={editingEvent?.dj} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Genere Musicale</label>
+                                            <input required name="genre" defaultValue={editingEvent?.genre} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Data</label>
+                                            <input required name="date" placeholder="DD MMM YY" defaultValue={editingEvent?.date} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Orario</label>
+                                            <input required name="time" type="time" defaultValue={editingEvent?.time} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Tipo Entrata</label>
+                                            <select name="entryType" defaultValue={editingEvent?.entryType || "WEB LIST"} className="w-full bg-black border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all">
+                                                <option value="WEB LIST">WEB LIST</option>
+                                                <option value="INVITE ONLY">INVITE ONLY</option>
+                                                <option value="DOOR TAX">DOOR TAX</option>
+                                                <option value="PRIVATE">PRIVATE</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Limite Registrazioni</label>
+                                            <input required name="regLimit" type="number" defaultValue={editingEvent?.regLimit} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <label className="flex items-center gap-4 cursor-pointer group">
+                                            <input type="checkbox" name="dresscode" defaultChecked={editingEvent?.dresscode} className="hidden peer" />
+                                            <div className="w-6 h-6 border border-white/20 peer-checked:bg-gold peer-checked:border-gold transition-all" />
+                                            <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-gold transition-colors">Richiesto Dresscode</span>
+                                        </label>
+                                        <label className="flex items-center gap-4 cursor-pointer group">
+                                            <input type="checkbox" name="isSoldOut" defaultChecked={editingEvent?.isSoldOut} className="hidden peer" />
+                                            <div className="w-6 h-6 border border-white/20 peer-checked:bg-red-500 peer-checked:border-red-500 transition-all" />
+                                            <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-red-500 transition-colors">Segna come Sold Out</span>
+                                        </label>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Descrizione dell'Evento</label>
+                                        <textarea name="desc" rows={4} defaultValue={editingEvent?.desc} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all resize-none" />
+                                    </div>
+
+                                    <button type="submit" className="w-full bg-gold text-black font-bold uppercase py-5 tracking-[0.3em] hover:invert transition-all transform active:scale-95 shadow-[0_20px_50px_rgba(255,184,0,0.1)] mt-4">
+                                        {editingEvent ? "SALVA MODIFICHE" : "PUBBLICA EVENTO"}
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }
