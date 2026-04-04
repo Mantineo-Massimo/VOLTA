@@ -2,8 +2,9 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Calendar, MapPin, Music, X, ArrowRight, Info, CheckCircle2 } from "lucide-react";
+import { Calendar, MapPin, Music, X, ArrowRight, Info, CheckCircle2, Lock, User, Clock } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 const activeEvents = [
     {
@@ -16,7 +17,10 @@ const activeEvents = [
         dj: "Special Guest DJ",
         image: "/assets/DSC_0036.JPG",
         status: "Low Availability",
-        desc: "Il lancio ufficiale della stagione. Un'esperienza immersiva di suoni e luci."
+        genre: "Melodic Techno / Indy",
+        dresscode: "Black & Bold",
+        price: "Entry by Reservation",
+        desc: "Il lancio ufficiale della stagione. Un'esperienza immersiva di suoni e luci progettata per colpire i sensi."
     },
     {
         id: 2,
@@ -28,7 +32,10 @@ const activeEvents = [
         dj: "VŌLTA Residents",
         image: "/assets/DSC_0175.JPG",
         status: "Selling Fast",
-        desc: "Un viaggio sonoro nelle sonorità più industriali e pure del clubbing."
+        genre: "Pure Techno / Industrial",
+        dresscode: "Underground Brutalist",
+        price: "Member Exclusive",
+        desc: "Un viaggio sonoro nelle sonorità più industriali e pure del clubbing. Niente compromessi, solo ritmo."
     },
     {
         id: 3,
@@ -40,13 +47,18 @@ const activeEvents = [
         dj: "Deep House Session",
         image: "/assets/DSC_0467.JPG",
         status: "Upcoming",
-        desc: "Il primo evento pomeridiano della stagione. Aperitivo e ritmi profondi."
+        genre: "Deep House / Afro Beat",
+        dresscode: "Summer Premium",
+        price: "Cocktail & Entry",
+        desc: "Il primo evento pomeridiano della stagione. Aperitivo tech-house e ritmi profondi fronte mare."
     }
 ];
 
 export default function Events() {
     const [selectedEvent, setSelectedEvent] = useState<typeof activeEvents[0] | null>(null);
     const [isRegistered, setIsRegistered] = useState(false);
+    // Mock login state for demonstration
+    const [isLoggedIn] = useState(false);
 
     const handleRegister = (e: React.FormEvent) => {
         e.preventDefault();
@@ -54,7 +66,7 @@ export default function Events() {
         setTimeout(() => {
             setIsRegistered(false);
             setSelectedEvent(null);
-        }, 2000);
+        }, 3000);
     };
 
     return (
@@ -93,7 +105,8 @@ export default function Events() {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.1 }}
                             viewport={{ once: true }}
-                            className="group relative flex flex-col bg-white/5 rounded-3xl overflow-hidden border border-white/5 hover:border-gold/30 transition-all duration-500"
+                            className="group relative flex flex-col bg-white/5 rounded-3xl overflow-hidden border border-white/5 hover:border-gold/30 transition-all duration-500 cursor-pointer"
+                            onClick={() => setSelectedEvent(event)}
                         >
                             {/* Card Image */}
                             <div className="aspect-[4/3] relative overflow-hidden">
@@ -133,12 +146,9 @@ export default function Events() {
                                     </div>
                                 </div>
 
-                                <button
-                                    onClick={() => setSelectedEvent(event)}
-                                    className="mt-auto group/btn flex items-center justify-between bg-white text-black p-4 rounded-2xl font-bold uppercase text-xs hover:bg-gold transition-all"
-                                >
-                                    Riserva Posto <ArrowRight className="group-hover/btn:translate-x-1 transition-transform" />
-                                </button>
+                                <div className="mt-auto group/btn flex items-center justify-between text-white/20 hover:text-white transition-all text-xs font-bold uppercase tracking-widest">
+                                    Vedi Dettagli <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                </div>
                             </div>
                         </motion.div>
                     ))}
@@ -154,86 +164,144 @@ export default function Events() {
                 </motion.p>
             </div>
 
-            {/* Registration Modal */}
+            {/* Registration & Specs Modal */}
             <AnimatePresence>
                 {selectedEvent && (
-                    <div className="fixed inset-0 z-[150] flex items-center justify-center p-6">
+                    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setSelectedEvent(null)}
-                            className="absolute inset-0 bg-black/90 backdrop-blur-xl"
+                            className="absolute inset-0 bg-black/95 backdrop-blur-2xl"
                         />
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            initial={{ scale: 0.9, opacity: 0, y: 40 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="relative w-full max-w-lg bg-zinc-900 rounded-[2.5rem] border border-white/10 overflow-hidden"
+                            exit={{ scale: 0.9, opacity: 0, y: 40 }}
+                            className="relative w-full max-w-4xl bg-zinc-900/50 rounded-[2.5rem] border border-white/10 overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-auto"
                         >
+                            {/* Close Button */}
                             <button
                                 onClick={() => setSelectedEvent(null)}
-                                className="absolute top-6 right-6 w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all"
+                                className="absolute top-6 right-6 z-20 w-10 h-10 rounded-full border border-white/10 bg-black/50 backdrop-blur-md flex items-center justify-center hover:bg-white hover:text-black transition-all"
                             >
                                 <X size={20} />
                             </button>
 
-                            {!isRegistered ? (
-                                <div className="p-8 md:p-12 space-y-8">
-                                    <div className="space-y-4">
-                                        <span className="text-gold uppercase text-[10px] font-bold tracking-widest">{selectedEvent.venue} — {selectedEvent.location}</span>
-                                        <h3 className="text-4xl font-bold uppercase tracking-tighter leading-none italic">
-                                            {selectedEvent.title}
-                                        </h3>
-                                        <div className="flex gap-4 text-[10px] font-bold uppercase tracking-widest text-white/40">
-                                            <span>{selectedEvent.date}</span>
-                                            <span>{selectedEvent.time}</span>
-                                        </div>
-                                    </div>
-
-                                    <form onSubmit={handleRegister} className="space-y-4">
-                                        <div className="space-y-4">
-                                            <input
-                                                required
-                                                type="text"
-                                                placeholder="NOME E COGNOME"
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-bold uppercase tracking-widest outline-none focus:border-gold transition-colors"
-                                            />
-                                            <input
-                                                required
-                                                type="email"
-                                                placeholder="EMAIL"
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-bold uppercase tracking-widest outline-none focus:border-gold transition-colors"
-                                            />
-                                        </div>
-                                        <label className="flex items-start gap-3 cursor-pointer group">
-                                            <input required type="checkbox" className="mt-1 accent-gold" />
-                                            <span className="text-[9px] uppercase font-bold tracking-widest text-white/40 leading-relaxed group-hover:text-white/60 transition-colors">
-                                                Accetto i termini, la GDPR policy e confermo di aver compreso che il pagamento avverrà al locale.
-                                            </span>
-                                        </label>
-                                        <button className="w-full bg-gold text-black p-5 rounded-2xl font-bold uppercase text-xs tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
-                                            Invia Registrazione
-                                        </button>
-                                    </form>
+                            {/* Left: Stats & Specs */}
+                            <div className="flex-1 p-8 md:p-12 space-y-12 overflow-y-auto border-b md:border-b-0 md:border-r border-white/10">
+                                <div className="space-y-4">
+                                    <span className="text-gold uppercase text-[10px] font-bold tracking-[0.5em] block">{selectedEvent.status}</span>
+                                    <h3 className="text-4xl md:text-6xl font-bold uppercase tracking-tighter leading-none italic">
+                                        {selectedEvent.title}
+                                    </h3>
+                                    <p className="text-white/60 text-sm font-thin uppercase leading-relaxed max-w-sm">
+                                        {selectedEvent.desc}
+                                    </p>
                                 </div>
-                            ) : (
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="p-12 flex flex-col items-center text-center gap-6"
-                                >
-                                    <div className="w-20 h-20 rounded-full bg-gold text-black flex items-center justify-center shadow-[0_0_50px_rgba(255,184,0,0.3)]">
-                                        <CheckCircle2 size={40} />
+
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Artist</p>
+                                        <p className="text-xs font-bold uppercase text-gold">{selectedEvent.dj}</p>
                                     </div>
-                                    <div className="space-y-2">
-                                        <h4 className="text-2xl font-bold uppercase tracking-tighter">Registrazione Inviata</h4>
-                                        <p className="text-xs font-bold uppercase text-white/40 tracking-widest leading-relaxed">
-                                            Un'email di conferma è stata inviata al tuo indirizzo.<br />Ci vediamo al VŌLTA.
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Genre</p>
+                                        <p className="text-xs font-bold uppercase text-white">{selectedEvent.genre}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Dress Code</p>
+                                        <p className="text-xs font-bold uppercase text-white">{selectedEvent.dresscode}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Entry Style</p>
+                                        <p className="text-xs font-bold uppercase text-white">{selectedEvent.price}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 pt-8 border-t border-white/5">
+                                    <div className="flex items-center gap-4">
+                                        <Calendar className="text-gold" size={16} />
+                                        <span className="text-xs font-bold uppercase tracking-[0.2em]">{selectedEvent.date}</span>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <Clock className="text-gold" size={16} />
+                                        <span className="text-xs font-bold uppercase tracking-[0.2em] font-mono">{selectedEvent.time}</span>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <MapPin className="text-gold" size={16} />
+                                        <span className="text-xs font-bold uppercase tracking-[0.2em]">{selectedEvent.venue}, {selectedEvent.location}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right: Auth Gate & Registration */}
+                            <div className="w-full md:w-[40%] bg-black/40 p-8 md:p-12 flex flex-col justify-center">
+                                {!isRegistered ? (
+                                    <>
+                                        {!isLoggedIn ? (
+                                            <div className="space-y-8 text-center animate-in fade-in zoom-in duration-500">
+                                                <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6">
+                                                    <Lock size={32} className="text-gold" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <h4 className="text-xl font-bold uppercase">Accesso Richiesto</h4>
+                                                    <p className="text-[10px] font-bold uppercase text-white/40 tracking-widest leading-relaxed">
+                                                        Per riservare un posto devi essere un membro della community VŌLTA.
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-4 pt-4">
+                                                    <Link
+                                                        href="/account"
+                                                        className="block w-full bg-white text-black p-5 rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-gold transition-all"
+                                                    >
+                                                        Accedi ora
+                                                    </Link>
+                                                    <Link
+                                                        href="/account?mode=signup"
+                                                        className="block w-full border border-white/10 p-5 rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all"
+                                                    >
+                                                        Crea Account
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-8 animate-in slide-in-from-right duration-500">
+                                                <div className="flex items-center gap-3 mb-8">
+                                                    <User size={16} className="text-gold" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">Prenota come Member</span>
+                                                </div>
+                                                <form onSubmit={handleRegister} className="space-y-4">
+                                                    <div className="space-y-4 text-xs font-bold uppercase tracking-widest">
+                                                        <input required placeholder="Telefono" className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 outline-none focus:border-gold transition-colors" />
+                                                        <div className="p-4 rounded-2xl bg-gold/5 border border-gold/10 text-[9px] text-gold/80 leading-relaxed uppercase">
+                                                            I tuoi dati (Nome ed Email) verranno estratti automaticamente dal tuo profilo VŌLTA.
+                                                        </div>
+                                                    </div>
+                                                    <button className="w-full bg-gold text-black p-5 rounded-2xl font-bold uppercase text-xs tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
+                                                        Conferma Prenotazione
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="flex flex-col items-center text-center gap-6"
+                                    >
+                                        <div className="w-20 h-20 rounded-full bg-gold text-black flex items-center justify-center shadow-[0_0_50px_rgba(255,184,0,0.3)]">
+                                            <CheckCircle2 size={40} />
+                                        </div>
+                                        <h4 className="text-2xl font-bold uppercase tracking-tighter">Prenotato!</h4>
+                                        <p className="text-[10px] font-bold uppercase text-white/40 tracking-widest leading-relaxed">
+                                            Riceverai una conferma digitale a breve.
                                         </p>
-                                    </div>
-                                </motion.div>
-                            )}
+                                    </motion.div>
+                                )}
+                            </div>
                         </motion.div>
                     </div>
                 )}
