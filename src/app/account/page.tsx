@@ -6,7 +6,7 @@ import {
     LayoutDashboard, Users, Calendar, Settings, Plus, Search,
     MoreVertical, Trash2, Edit, X, Check, Filter, Download,
     Music, MapPin, Clock, Info, Shield, LogOut, QrCode, Ticket,
-    Upload, Image as ImageIcon, ArrowRight, Activity, ShieldCheck, CheckCircle, User
+    Upload, Image as ImageIcon, ArrowRight, Activity, ShieldCheck, CheckCircle2, User
 } from "lucide-react";
 
 export default function Account() {
@@ -325,7 +325,7 @@ export default function Account() {
                                                 <p className="font-bold uppercase tracking-tighter text-lg">{item.event}</p>
                                                 <p className="text-[10px] uppercase tracking-widest text-white/40 mt-1">{item.date} • {item.location}</p>
                                             </div>
-                                            <CheckCircle size={20} className="text-gold/40 group-hover:text-gold transition-colors" />
+                                            <CheckCircle2 size={20} className="text-gold/40 group-hover:text-gold transition-colors" />
                                         </div>
                                     ))}
                                 </div>
