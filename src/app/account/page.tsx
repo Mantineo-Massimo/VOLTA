@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { QrCode, Users, LogIn, CheckCircle, LogOut, ArrowRight, Activity, ShieldCheck, User, Search } from "lucide-react";
+import {
+    LayoutDashboard, Users, Calendar, Settings, Plus, Search,
+    MoreVertical, Trash2, Edit, X, Check, Filter, Download,
+    Music, MapPin, Clock, Info, Shield, LogOut, QrCode, Ticket,
+    Upload, Image as ImageIcon, ArrowRight, Activity, ShieldCheck, CheckCircle, User
+} from "lucide-react";
 
 export default function Account() {
     const [role, setRole] = useState<"user" | "venue" | "admin" | null>(null);
@@ -10,6 +15,7 @@ export default function Account() {
     const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
     const [showEventModal, setShowEventModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState<any>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [events, setEvents] = useState([
         { id: 1, name: "VŌLTA Premiere", date: "4 APR 26", loc: "MESSINA", regs: 248, desc: "Evento di lancio esclusivo.", time: "22:00", dj: "CLARK", genre: "INDUSTRIAL", dresscode: true, entryType: "INVITE ONLY", isSoldOut: true, regLimit: 250 },
         { id: 2, name: "TECHNO CLASH", date: "10 APR 26", loc: "TAORMINA", regs: 156, desc: "La sfida definitiva.", time: "23:00", dj: "KØDE", genre: "TECHNO", dresscode: false, entryType: "DOOR TAX", isSoldOut: false, regLimit: 300 },
@@ -425,26 +431,23 @@ export default function Account() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-black border border-white/10 p-10 max-w-2xl w-full relative overflow-hidden"
+                            className="bg-black border border-white/10 p-10 max-w-5xl w-full relative overflow-hidden"
                         >
                             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-50" />
 
-                            <div className="flex justify-between items-start mb-12">
-                                <div>
-                                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-gold mb-2 block">Database Entry</span>
-                                    <h3 className="text-4xl font-bold uppercase tracking-tighter">
-                                        {editingEvent ? "Modifica Evento" : "Nuovo Evento"}
-                                    </h3>
-                                </div>
+                            <div className="flex justify-between items-end mb-10">
+                                <h2 className="text-4xl font-bold uppercase tracking-tighter italic">
+                                    {editingEvent ? "Modifica Evento" : "Nuovo Evento"}
+                                </h2>
                                 <button
                                     onClick={() => setShowEventModal(false)}
-                                    className="text-white/20 hover:text-white transition-colors uppercase text-[10px] font-bold tracking-widest"
+                                    className="bg-white/5 hover:bg-white/10 p-2 rounded-full transition-all"
                                 >
-                                    Chiudi
+                                    <X size={20} />
                                 </button>
                             </div>
 
-                            <form className="space-y-8 h-[60vh] overflow-y-auto pr-4 custom-scrollbar" onSubmit={(e) => {
+                            <form className="grid grid-cols-1 md:grid-cols-3 gap-10 h-[65vh] overflow-y-auto pr-4 custom-scrollbar" onSubmit={(e) => {
                                 e.preventDefault();
                                 const formData = new FormData(e.currentTarget);
                                 const newEventData = {
@@ -460,7 +463,8 @@ export default function Account() {
                                     entryType: formData.get('entryType') as string,
                                     isSoldOut: formData.get('isSoldOut') === 'on',
                                     regLimit: parseInt(formData.get('regLimit') as string) || 0,
-                                    regs: editingEvent ? editingEvent.regs : 0
+                                    regs: editingEvent ? editingEvent.regs : 0,
+                                    image: imagePreview || editingEvent?.image || "/assets/DSC_0036.JPG"
                                 };
 
                                 if (editingEvent) {
@@ -469,68 +473,119 @@ export default function Account() {
                                     setEvents(prev => [...prev, newEventData]);
                                 }
                                 setShowEventModal(false);
+                                setImagePreview(null);
                             }}>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Nome Evento</label>
-                                        <input required name="name" defaultValue={editingEvent?.name} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                {/* Left Column: Image Upload */}
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Cover Evento (Ratio 4:5)</label>
+                                    <div
+                                        className="relative aspect-[4/5] bg-white/[0.02] border border-white/10 hover:border-gold/50 transition-all group flex flex-col items-center justify-center cursor-pointer overflow-hidden"
+                                        onClick={() => document.getElementById('imageFile')?.click()}
+                                    >
+                                        {(imagePreview || editingEvent?.image) ? (
+                                            <>
+                                                <img
+                                                    src={imagePreview || editingEvent?.image}
+                                                    alt="Preview"
+                                                    className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
+                                                />
+                                                <div className="relative z-10 flex flex-col items-center gap-2 transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                                    <Upload size={32} className="text-gold" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-white">Cambia Immagine</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex flex-col items-center gap-4 text-white/20 group-hover:text-gold transition-colors">
+                                                <ImageIcon size={48} strokeWidth={1} />
+                                                <div className="text-center">
+                                                    <p className="text-[10px] font-bold uppercase tracking-widest">Trascina o Clicca</p>
+                                                    <p className="text-[8px] uppercase tracking-tighter mt-1">Formato 4:5 Consigliato</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <input
+                                            id="imageFile"
+                                            name="imageFile"
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    setImagePreview(URL.createObjectURL(file));
+                                                }
+                                            }}
+                                        />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Location</label>
-                                        <input required name="loc" defaultValue={editingEvent?.loc} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">DJ Master</label>
-                                        <input required name="dj" defaultValue={editingEvent?.dj} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Genere Musicale</label>
-                                        <input required name="genre" defaultValue={editingEvent?.genre} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Data</label>
-                                        <input required name="date" placeholder="DD MMM YY" defaultValue={editingEvent?.date} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Orario</label>
-                                        <input required name="time" type="time" defaultValue={editingEvent?.time} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Tipo Entrata</label>
-                                        <select name="entryType" defaultValue={editingEvent?.entryType || "WEB LIST"} className="w-full bg-black border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all">
-                                            <option value="WEB LIST">WEB LIST</option>
-                                            <option value="INVITE ONLY">INVITE ONLY</option>
-                                            <option value="DOOR TAX">DOOR TAX</option>
-                                            <option value="PRIVATE">PRIVATE</option>
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Limite Registrazioni</label>
-                                        <input required name="regLimit" type="number" defaultValue={editingEvent?.regLimit} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
-                                    </div>
+                                    <p className="text-[9px] text-white/30 uppercase tracking-widest leading-relaxed">
+                                        L'immagine verrà ritagliata automaticamente per adattarsi al grid brutalist della pagina eventi.
+                                    </p>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-8">
-                                    <label className="flex items-center gap-4 cursor-pointer group">
-                                        <input type="checkbox" name="dresscode" defaultChecked={editingEvent?.dresscode} className="hidden peer" />
-                                        <div className="w-6 h-6 border border-white/20 peer-checked:bg-gold peer-checked:border-gold transition-all" />
-                                        <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-gold transition-colors">Richiesto Dresscode</span>
-                                    </label>
-                                    <label className="flex items-center gap-4 cursor-pointer group">
-                                        <input type="checkbox" name="isSoldOut" defaultChecked={editingEvent?.isSoldOut} className="hidden peer" />
-                                        <div className="w-6 h-6 border border-white/20 peer-checked:bg-red-500 peer-checked:border-red-500 transition-all" />
-                                        <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-red-500 transition-colors">Segna come Sold Out</span>
-                                    </label>
-                                </div>
+                                {/* Center & Right Columns: Fields */}
+                                <div className="md:col-span-2 space-y-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Nome Evento</label>
+                                            <input required name="name" defaultValue={editingEvent?.name} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Location</label>
+                                            <input required name="loc" defaultValue={editingEvent?.loc} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">DJ Master</label>
+                                            <input required name="dj" defaultValue={editingEvent?.dj} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Genere Musicale</label>
+                                            <input required name="genre" defaultValue={editingEvent?.genre} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Data</label>
+                                            <input required name="date" placeholder="DD MMM YY" defaultValue={editingEvent?.date} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Orario</label>
+                                            <input required name="time" type="time" defaultValue={editingEvent?.time} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Tipo Entrata</label>
+                                            <select name="entryType" defaultValue={editingEvent?.entryType || "WEB LIST"} className="w-full bg-black border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all">
+                                                <option value="WEB LIST">WEB LIST</option>
+                                                <option value="INVITE ONLY">INVITE ONLY</option>
+                                                <option value="DOOR TAX">DOOR TAX</option>
+                                                <option value="PRIVATE">PRIVATE</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Limite Registrazioni</label>
+                                            <input required name="regLimit" type="number" defaultValue={editingEvent?.regLimit} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                        </div>
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Descrizione dell'Evento</label>
-                                    <textarea name="desc" rows={4} defaultValue={editingEvent?.desc} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all resize-none" />
-                                </div>
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <label className="flex items-center gap-4 cursor-pointer group">
+                                            <input type="checkbox" name="dresscode" defaultChecked={editingEvent?.dresscode} className="hidden peer" />
+                                            <div className="w-6 h-6 border border-white/20 peer-checked:bg-gold peer-checked:border-gold transition-all" />
+                                            <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-gold transition-colors">Richiesto Dresscode</span>
+                                        </label>
+                                        <label className="flex items-center gap-4 cursor-pointer group">
+                                            <input type="checkbox" name="isSoldOut" defaultChecked={editingEvent?.isSoldOut} className="hidden peer" />
+                                            <div className="w-6 h-6 border border-white/20 peer-checked:bg-red-500 peer-checked:border-red-500 transition-all" />
+                                            <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-red-500 transition-colors">Segna come Sold Out</span>
+                                        </label>
+                                    </div>
 
-                                <button type="submit" className="w-full bg-gold text-black font-bold uppercase py-5 tracking-[0.3em] hover:invert transition-all transform active:scale-95 shadow-[0_20px_50px_rgba(255,184,0,0.1)] mt-4">
-                                    {editingEvent ? "SALVA MODIFICHE" : "PUBBLICA EVENTO"}
-                                </button>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Descrizione dell'Evento</label>
+                                        <textarea name="desc" rows={4} defaultValue={editingEvent?.desc} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all resize-none" />
+                                    </div>
+
+                                    <button type="submit" className="w-full bg-gold text-black font-bold uppercase py-5 tracking-[0.3em] hover:invert transition-all transform active:scale-95 shadow-[0_20px_50px_rgba(255,184,0,0.1)] mt-4">
+                                        {editingEvent ? "SALVA MODIFICHE" : "PUBBLICA EVENTO"}
+                                    </button>
+                                </div>
                             </form>
                         </motion.div>
                     </div>

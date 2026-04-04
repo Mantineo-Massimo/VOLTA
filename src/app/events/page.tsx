@@ -14,13 +14,16 @@ const activeEvents = [
         time: "23:00 - 05:00",
         location: "Messina",
         venue: "Teatro Metropolitan",
-        dj: "Special Guest DJ",
+        dj: "CLARK",
         image: "/assets/DSC_0036.JPG",
-        status: "Low Availability",
-        genre: "Melodic Techno / Indy",
-        dresscode: "Black & Bold",
+        status: "Sold Out",
+        genre: "INDUSTRIAL / TECHNO",
+        dresscode: true,
+        entryType: "INVITE ONLY",
         price: "Entry by Reservation",
-        desc: "Il lancio ufficiale della stagione. Un'esperienza immersiva di suoni e luci progettata per colpire i sensi."
+        desc: "Il lancio ufficiale della stagione. Un'esperienza immersiva di suoni e luci progettata per colpire i sensi.",
+        regLimit: 250,
+        regs: 250
     },
     {
         id: 2,
@@ -29,13 +32,16 @@ const activeEvents = [
         time: "22:30 - Late",
         location: "Taormina",
         venue: "Secret Garden",
-        dj: "VŌLTA Residents",
+        dj: "KØDE",
         image: "/assets/DSC_0175.JPG",
-        status: "Selling Fast",
-        genre: "Pure Techno / Industrial",
-        dresscode: "Underground Brutalist",
+        status: "Low Availability",
+        genre: "PURE TECHNO / HARD",
+        dresscode: false,
+        entryType: "DOOR TAX",
         price: "Member Exclusive",
-        desc: "Un viaggio sonoro nelle sonorità più industriali e pure del clubbing. Niente compromessi, solo ritmo."
+        desc: "Un viaggio sonoro nelle sonorità più industriali e pure del clubbing. Niente compromessi, solo ritmo.",
+        regLimit: 300,
+        regs: 245
     },
     {
         id: 3,
@@ -44,13 +50,16 @@ const activeEvents = [
         time: "18:00 - 00:00",
         location: "Milazzo",
         venue: "Beach Club",
-        dj: "Deep House Session",
+        dj: "MARK",
         image: "/assets/DSC_0467.JPG",
         status: "Upcoming",
-        genre: "Deep House / Afro Beat",
-        dresscode: "Summer Premium",
+        genre: "DEEP HOUSE / AFRO",
+        dresscode: true,
+        entryType: "WEB LIST",
         price: "Cocktail & Entry",
-        desc: "Il primo evento pomeridiano della stagione. Aperitivo tech-house e ritmi profondi fronte mare."
+        desc: "Il primo evento pomeridiano della stagione. Aperitivo tech-house e ritmi profondi fronte mare.",
+        regLimit: 150,
+        regs: 42
     }
 ];
 
@@ -109,7 +118,7 @@ export default function Events() {
                             onClick={() => setSelectedEvent(event)}
                         >
                             {/* Card Image */}
-                            <div className="aspect-[4/3] relative overflow-hidden">
+                            <div className="aspect-[4/5] relative overflow-hidden">
                                 <Image
                                     src={event.image}
                                     alt={event.title}
@@ -127,28 +136,40 @@ export default function Events() {
                             {/* Card Content */}
                             <div className="p-8 flex flex-col flex-grow gap-6">
                                 <div className="space-y-2">
-                                    <div className="flex items-center gap-4 text-gold uppercase text-[10px] font-bold tracking-widest">
+                                    <div className="flex items-center gap-4 text-gold uppercase text-[9px] font-bold tracking-[0.2em]">
                                         <span>{event.date}</span>
-                                        <div className="w-1 h-1 rounded-full bg-white/20" />
+                                        <div className="w-1 h-1 rounded-full bg-gold/30" />
                                         <span>{event.location}</span>
                                     </div>
-                                    <h2 className="text-3xl font-bold uppercase tracking-tighter italic">{event.title}</h2>
+                                    <h2 className="text-3xl font-bold uppercase tracking-tighter italic group-hover:text-gold transition-colors">{event.title}</h2>
+                                    <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">{event.genre}</p>
                                 </div>
 
-                                <div className="space-y-3 text-white/40 text-xs font-bold uppercase tracking-widest">
-                                    <div className="flex items-center gap-3">
-                                        <MapPin size={14} className="text-gold" />
-                                        <span>{event.venue}</span>
+                                <div className="space-y-4 text-white/40 text-[10px] font-bold uppercase tracking-widest border-t border-white/5 pt-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <MapPin size={12} className="text-gold" />
+                                            <span>{event.venue}</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <Clock size={12} className="text-gold" />
+                                            <span>{event.time.split(' - ')[0]}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <Music size={14} className="text-gold" />
-                                        <span>{event.dj}</span>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3 text-white/80">
+                                            <Music size={12} className="text-gold" />
+                                            <span>{event.dj}</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            {event.dresscode && <span className="border border-white/10 px-2 py-0.5 text-[8px]">DRESSCODE</span>}
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="mt-auto group/btn flex items-center justify-between text-white/20 hover:text-white transition-all text-xs font-bold uppercase tracking-widest">
-                                    Vedi Dettagli <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-                                </div>
+                                <button className="w-full mt-auto py-4 border border-white/10 uppercase text-[10px] font-bold tracking-[0.3em] group-hover:bg-white group-hover:text-black transition-all duration-500">
+                                    Dettagli Evento
+                                </button>
                             </div>
                         </motion.div>
                     ))}
@@ -201,26 +222,35 @@ export default function Events() {
                                     </p>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-8">
+                                <div className="grid grid-cols-2 gap-8 text-left">
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Artist</p>
-                                        <p className="text-xs font-bold uppercase text-gold">{selectedEvent.dj}</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Master Artist</p>
+                                        <p className="text-sm font-bold uppercase text-gold">{selectedEvent.dj}</p>
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Genre</p>
-                                        <p className="text-xs font-bold uppercase text-white">{selectedEvent.genre}</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Sonic Genre</p>
+                                        <p className="text-sm font-bold uppercase text-white">{selectedEvent.genre}</p>
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Dress Code</p>
-                                        <p className="text-xs font-bold uppercase text-white">{selectedEvent.dresscode}</p>
+                                        <p className="text-sm font-bold uppercase text-white">{selectedEvent.dresscode ? "REQUIRED" : "NOT REQUIRED"}</p>
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Entry Style</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Entry Access</p>
                                         <div className="flex items-center gap-2">
-                                            <p className="text-xs font-bold uppercase text-white">{selectedEvent.price}</p>
-                                            {selectedEvent.status === "Sold Out" && (
-                                                <span className="bg-red-500 text-white text-[8px] px-2 py-0.5 font-bold uppercase">Sold Out</span>
-                                            )}
+                                            <p className="text-sm font-bold uppercase text-white">{selectedEvent.entryType || selectedEvent.price}</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Availability</p>
+                                        <div className="flex flex-col gap-1">
+                                            <div className="h-1.5 w-full bg-white/5 overflow-hidden">
+                                                <div
+                                                    className={`h-full transition-all duration-1000 ${selectedEvent.regs >= selectedEvent.regLimit ? 'bg-red-500' : 'bg-gold'}`}
+                                                    style={{ width: `${Math.min(100, (selectedEvent.regs / selectedEvent.regLimit) * 100)}%` }}
+                                                />
+                                            </div>
+                                            <p className="text-[9px] font-bold text-white/40 uppercase">{selectedEvent.regs} / {selectedEvent.regLimit} REGISTERED</p>
                                         </div>
                                     </div>
                                 </div>
