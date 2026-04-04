@@ -5,20 +5,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import { QrCode, Users, LogIn, CheckCircle, LogOut, ArrowRight, Activity, ShieldCheck, User, Search } from "lucide-react";
 
 export default function Account() {
-    const [role, setRole] = useState<"user" | "venue" | null>(null);
+    const [role, setRole] = useState<"user" | "venue" | "admin" | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+    const [showEventModal, setShowEventModal] = useState(false);
+    const [editingEvent, setEditingEvent] = useState<any>(null);
+    const [events, setEvents] = useState([
+        { id: 1, name: "VŌLTA Premiere", date: "4 APR 26", loc: "MESSINA", regs: 248, desc: "Evento di lancio esclusivo.", time: "22:00" },
+        { id: 2, name: "TECHNO CLASH", date: "10 APR 26", loc: "TAORMINA", regs: 156, desc: "La sfida definitiva.", time: "23:00" },
+        { id: 3, name: "SICKO NIGHT", date: "12 APR 26", loc: "MILAZZO", regs: 92, desc: "Nightlife refinement.", time: "22:30" }
+    ]);
 
     // Initial Login / Role Selection Screen
     if (!isLoggedIn) {
         return (
-            <div className="min-h-screen bg-black pt-32 pb-24 px-6 overflow-hidden flex flex-col items-center justify-center relative">
+            <div className="min-h-screen bg-black pt-32 pb-24 px-6 overflow-hidden flex flex-col items-center justify-center relative font-sans">
                 {/* Background Decorative Elements */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gold/5 blur-[120px] rounded-full pointer-events-none" />
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="max-w-4xl w-full relative z-10"
+                    className="max-w-6xl w-full relative z-10"
                 >
                     <div className="flex flex-col items-center mb-16 text-center">
                         <motion.span
@@ -29,24 +37,24 @@ export default function Account() {
                         <h1 className="text-6xl md:text-8xl font-bold tracking-[ -0.05em] uppercase leading-none">
                             Access <span className="text-gold">Portal.</span>
                         </h1>
-                        <p className="mt-6 text-sm uppercase tracking-[0.3em] font-medium text-white/40">Seleziona la tua modalità di accesso</p>
+                        <p className="mt-6 text-sm uppercase tracking-[0.3em] font-medium text-white/40 italic">Seleziona la tua modalità di accesso</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Member Access */}
                         <motion.button
-                            whileHover={{ y: -10 }}
+                            whileHover={{ scale: 1.02 }}
                             onClick={() => { setRole("user"); setIsLoggedIn(true); }}
-                            className="group relative h-[400px] flex flex-col justify-end p-10 border border-white/10 bg-white/[0.02] overflow-hidden rounded-sm"
+                            className="group relative h-[400px] flex flex-col justify-end p-10 border border-white/5 bg-white/[0.01] overflow-hidden rounded-sm hover:border-gold/30 transition-all"
                         >
-                            <div className="absolute top-0 right-0 p-8 text-white/10 group-hover:text-gold/20 transition-colors">
+                            <div className="absolute top-0 right-0 p-8 text-white/5 group-hover:text-gold/10 transition-all">
                                 <User size={120} strokeWidth={0.5} />
                             </div>
-                            <div className="relative z-10">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-gold mb-4 block">Area Riservata</span>
-                                <h2 className="text-4xl font-bold uppercase mb-4 group-hover:text-gold transition-colors tracking-tighter">Member<br />Dashboard</h2>
-                                <p className="text-xs text-white/50 uppercase leading-relaxed font-medium max-w-[200px] mb-8">Accesso esclusivo per visualizzare pass, prenotazioni e Tier VŌLTA.</p>
-                                <div className="flex items-center gap-2 group-hover:gap-4 transition-all text-xs font-bold uppercase tracking-widest overflow-hidden">
+                            <div className="relative z-10 text-left">
+                                <span className="text-[9px] font-bold uppercase tracking-[0.5em] text-gold mb-4 block">Private Club</span>
+                                <h2 className="text-4xl font-bold uppercase mb-4 tracking-tighter">Member</h2>
+                                <p className="text-xs text-white/40 uppercase leading-relaxed font-medium mb-8">Accesso esclusivo per visualizzare pass e prenotazioni.</p>
+                                <div className="flex items-center gap-2 group-hover:gap-4 transition-all text-[10px] font-bold uppercase tracking-widest">
                                     <span>Accedi</span>
                                     <ArrowRight size={14} className="text-gold" />
                                 </div>
@@ -55,20 +63,40 @@ export default function Account() {
 
                         {/* Venue Access */}
                         <motion.button
-                            whileHover={{ y: -10 }}
+                            whileHover={{ scale: 1.02 }}
                             onClick={() => { setRole("venue"); setIsLoggedIn(true); }}
-                            className="group relative h-[400px] flex flex-col justify-end p-10 border border-white/10 bg-white/[0.02] overflow-hidden rounded-sm"
+                            className="group relative h-[400px] flex flex-col justify-end p-10 border border-white/5 bg-white/[0.01] overflow-hidden rounded-sm hover:border-gold/30 transition-all"
                         >
-                            <div className="absolute top-0 right-0 p-8 text-white/10 group-hover:text-gold/20 transition-colors">
+                            <div className="absolute top-0 right-0 p-8 text-white/5 group-hover:text-gold/10 transition-all">
+                                <Users size={120} strokeWidth={0.5} />
+                            </div>
+                            <div className="relative z-10 text-left">
+                                <span className="text-[9px] font-bold uppercase tracking-[0.5em] text-gold mb-4 block">Operational Side</span>
+                                <h2 className="text-4xl font-bold uppercase mb-4 tracking-tighter">Venue</h2>
+                                <p className="text-xs text-white/40 uppercase leading-relaxed font-medium mb-8">Validazione accessi, liste ospiti e check-in rapido.</p>
+                                <div className="flex items-center gap-2 group-hover:gap-4 transition-all text-[10px] font-bold uppercase tracking-widest">
+                                    <span>Gestione</span>
+                                    <ArrowRight size={14} className="text-gold" />
+                                </div>
+                            </div>
+                        </motion.button>
+
+                        {/* Admin Access */}
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            onClick={() => { setRole("admin"); setIsLoggedIn(true); }}
+                            className="group relative h-[400px] flex flex-col justify-end p-10 border border-white/5 bg-white/[0.01] overflow-hidden rounded-sm hover:border-gold/30 transition-all"
+                        >
+                            <div className="absolute top-0 right-0 p-8 text-white/5 group-hover:text-gold/10 transition-all">
                                 <ShieldCheck size={120} strokeWidth={0.5} />
                             </div>
-                            <div className="relative z-10">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-gold mb-4 block">Operatori Autorizzati</span>
-                                <h2 className="text-4xl font-bold uppercase mb-4 group-hover:text-gold transition-colors tracking-tighter">Venue Control<br />System</h2>
-                                <p className="text-xs text-white/50 uppercase leading-relaxed font-medium max-w-[200px] mb-8">Gestione liste, statistiche in tempo reale e validazione accessi.</p>
-                                <div className="flex items-center gap-2 group-hover:gap-4 transition-all text-xs font-bold uppercase tracking-widest">
-                                    <span>Sistema Operativo</span>
-                                    <ArrowRight size={14} className="text-gold" />
+                            <div className="relative z-10 text-left">
+                                <span className="text-[9px] font-bold uppercase tracking-[0.5em] text-gold mb-4 block">System Overlord</span>
+                                <h2 className="text-4xl font-bold uppercase mb-4 tracking-tighter text-gold">Admin</h2>
+                                <p className="text-xs text-white/40 uppercase leading-relaxed font-medium mb-8">Gestione globale eventi, liste registrazioni e controllo totale.</p>
+                                <div className="flex items-center gap-2 group-hover:gap-4 transition-all text-[10px] font-bold uppercase tracking-widest text-gold">
+                                    <span>Power Management</span>
+                                    <ArrowRight size={14} />
                                 </div>
                             </div>
                         </motion.button>
@@ -79,10 +107,10 @@ export default function Account() {
     }
 
     return (
-        <div className="min-h-screen bg-black pt-32 pb-24 px-6 md:px-12">
+        <div className="min-h-screen bg-black pt-32 pb-24 px-6 md:px-12 font-sans">
             <div className="max-w-7xl mx-auto">
                 {/* Header Navigation */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-20 border-b border-white/10 pb-10">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 border-b border-white/5 pb-10">
                     <div>
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
@@ -90,25 +118,139 @@ export default function Account() {
                             className="flex items-center gap-3 mb-4"
                         >
                             <span className="w-12 h-[1px] bg-gold" />
-                            <span className="text-[10px] uppercase font-bold tracking-[0.5em] text-gold">
-                                {role === "user" ? "Private Member Area" : "Operational Command"}
+                            <span className="text-[9px] uppercase font-bold tracking-[0.5em] text-gold">
+                                {role === "user" ? "Private Member Area" : role === "venue" ? "Operational Command" : "Global System Administration"}
                             </span>
                         </motion.div>
-                        <h1 className="text-4xl md:text-6xl font-bold uppercase tracking-tighter leading-none">
-                            {role === "user" ? "Bentornato, Massimo" : "Management View"}
+                        <h1 className="text-4xl md:text-7xl font-bold uppercase tracking-tighter leading-none">
+                            {role === "user" ? "Bentornato, Massimo" : role === "venue" ? "Operations" : "Management Hub"}
                         </h1>
                     </div>
 
                     <button
-                        onClick={() => setIsLoggedIn(false)}
-                        className="flex items-center gap-2 group text-[10px] uppercase font-bold tracking-widest text-white/40 hover:text-white transition-colors"
+                        onClick={() => { setIsLoggedIn(false); setRole(null); setSelectedEventId(null); }}
+                        className="flex items-center gap-2 group text-[10px] uppercase font-bold tracking-widest text-white/20 hover:text-white transition-colors"
                     >
-                        <span>Disconnetti Sessione</span>
+                        <span>Fine Sessione</span>
                         <LogOut size={14} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                 </div>
 
-                {role === "user" ? (
+                {role === "admin" ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                        {/* Event List for Admins */}
+                        <div className="lg:col-span-7 flex flex-col gap-10">
+                            <div className="flex justify-between items-center bg-white/[0.02] p-8 border border-white/5">
+                                <h2 className="text-2xl font-bold uppercase tracking-tighter">Eventi Globali</h2>
+                                <button
+                                    onClick={() => { setEditingEvent(null); setShowEventModal(true); }}
+                                    className="bg-gold text-black text-[10px] font-bold uppercase px-6 py-3 tracking-widest hover:invert transition-all transform active:scale-95"
+                                >
+                                    NUOVO EVENTO
+                                </button>
+                            </div>
+
+                            <div className="flex flex-col gap-4">
+                                {events.map((event) => (
+                                    <div
+                                        key={event.id}
+                                        onClick={() => setSelectedEventId(event.id)}
+                                        className={`p-8 border transition-all cursor-pointer group ${selectedEventId === event.id ? 'border-gold bg-gold/5' : 'border-white/5 bg-white/[0.01] hover:border-white/20'}`}
+                                    >
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gold mb-2">{event.date} • {event.loc}</p>
+                                                <h3 className="text-2xl font-bold uppercase tracking-tighter">{event.name}</h3>
+                                                <p className="text-[10px] uppercase tracking-widest text-white/40 mt-3">{event.regs} Registrazioni Attive</p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setEditingEvent(event); setShowEventModal(true); }}
+                                                    className="p-2 border border-white/10 hover:border-white/40 text-white/40 hover:text-white transition-all"
+                                                >
+                                                    <Activity size={14} />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setEvents(prev => prev.filter(ev => ev.id !== event.id));
+                                                        if (selectedEventId === event.id) setSelectedEventId(null);
+                                                    }}
+                                                    className="p-2 border border-white/10 hover:border-red-500/50 text-white/40 hover:text-red-500 transition-all"
+                                                >
+                                                    <LogOut size={14} className="rotate-90 text-red-500/50 group-hover:text-red-500" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Registration View for Selected Event */}
+                        <div className="lg:col-span-5 border border-white/10 bg-white/[0.01] flex flex-col p-8 md:p-10 min-h-[600px] relative overflow-hidden">
+                            {!selectedEventId ? (
+                                <div className="flex-grow flex flex-col items-center justify-center text-center opacity-20">
+                                    <Search size={48} strokeWidth={1} className="mb-6" />
+                                    <p className="text-sm uppercase tracking-widest">Seleziona un evento per gestire le registrazioni</p>
+                                </div>
+                            ) : (
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={selectedEventId}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        className="h-full flex flex-col"
+                                    >
+                                        <div className="mb-8 flex justify-between items-end border-b border-white/10 pb-6">
+                                            <h3 className="text-xl font-bold uppercase tracking-tighter">Registrazioni Hub</h3>
+                                            <span className="text-[9px] font-bold uppercase text-gold">Live Syncing</span>
+                                        </div>
+
+                                        <div className="space-y-6 flex-grow ">
+                                            <div className="relative group">
+                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-gold transition-colors" size={14} />
+                                                <input
+                                                    type="text"
+                                                    placeholder="CERCA IN LISTA..."
+                                                    className="w-full bg-black border border-white/10 px-12 py-3 text-[10px] font-bold uppercase tracking-widest focus:outline-none focus:border-gold transition-all"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                                {(selectedEventId === 1 ? [
+                                                    { name: "Marco Rossi", email: "m.rossi@v-member.it", status: "WEB" },
+                                                    { name: "Luca Veronese", email: "l.vero@gmail.com", status: "PR-A" },
+                                                    { name: "Chiara Belli", email: "chiara.b@v-member.it", status: "GOLD" },
+                                                    { name: "Sandro Galli", email: "s.galli@hotmail.it", status: "WEB" }
+                                                ] : selectedEventId === 2 ? [
+                                                    { name: "Alessia Forte", email: "a.forte@v-member.it", status: "VIP" },
+                                                    { name: "Dario Longo", email: "d.longo@gmail.com", status: "WEB" }
+                                                ] : [
+                                                    { name: "Giusy Mare", email: "g.mare@v-member.it", status: "WEB" }
+                                                ]).map((reg, idx) => (
+                                                    <div key={idx} className="p-4 border border-white/5 bg-white/[0.02] flex items-center justify-between group hover:border-white/20 transition-all">
+                                                        <div>
+                                                            <p className="font-bold uppercase text-xs tracking-tighter">{reg.name}</p>
+                                                            <p className="text-[10px] text-white/20">{reg.email}</p>
+                                                        </div>
+                                                        <span className="text-[8px] font-bold px-2 py-1 bg-white/5 text-white/40 group-hover:bg-gold group-hover:text-black transition-colors">{reg.status}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-12 flex gap-4">
+                                            <button className="flex-grow border border-white/10 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 transition-all italic">EXPORT CSV</button>
+                                            <button className="flex-grow border border-white/10 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 transition-all italic">SEND NOTIF</button>
+                                        </div>
+                                    </motion.div>
+                                </AnimatePresence>
+                            )}
+                        </div>
+                    </div>
+                ) : role === "user" ? (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                         {/* Left Column: QR Code & Status */}
                         <div className="lg:col-span-4 flex flex-col gap-10">
@@ -272,6 +414,85 @@ export default function Account() {
                     </div>
                 )}
             </div>
+
+            {/* Event Management Modal */}
+            <AnimatePresence>
+                {showEventModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="bg-black border border-white/10 p-10 max-w-2xl w-full relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-50" />
+
+                            <div className="flex justify-between items-start mb-12">
+                                <div>
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-gold mb-2 block">Database Entry</span>
+                                    <h3 className="text-4xl font-bold uppercase tracking-tighter">
+                                        {editingEvent ? "Modifica Evento" : "Nuovo Evento"}
+                                    </h3>
+                                </div>
+                                <button
+                                    onClick={() => setShowEventModal(false)}
+                                    className="text-white/20 hover:text-white transition-colors uppercase text-[10px] font-bold tracking-widest"
+                                >
+                                    Chiudi
+                                </button>
+                            </div>
+
+                            <form className="space-y-8" onSubmit={(e) => {
+                                e.preventDefault();
+                                const formData = new FormData(e.currentTarget);
+                                const newEventData = {
+                                    id: editingEvent ? editingEvent.id : Date.now(),
+                                    name: formData.get('name') as string,
+                                    date: formData.get('date') as string,
+                                    loc: formData.get('loc') as string,
+                                    time: formData.get('time') as string,
+                                    desc: formData.get('desc') as string,
+                                    regs: editingEvent ? editingEvent.regs : 0
+                                };
+
+                                if (editingEvent) {
+                                    setEvents(prev => prev.map(ev => ev.id === editingEvent.id ? newEventData : ev));
+                                } else {
+                                    setEvents(prev => [...prev, newEventData]);
+                                }
+                                setShowEventModal(false);
+                            }}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Nome Evento</label>
+                                        <input required name="name" defaultValue={editingEvent?.name} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Location</label>
+                                        <input required name="loc" defaultValue={editingEvent?.loc} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Data</label>
+                                        <input required name="date" placeholder="DD MMM YY" defaultValue={editingEvent?.date} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Orario</label>
+                                        <input required name="time" type="time" defaultValue={editingEvent?.time} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Descrizione Breve</label>
+                                    <textarea name="desc" rows={3} defaultValue={editingEvent?.desc} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all resize-none" />
+                                </div>
+
+                                <button type="submit" className="w-full bg-gold text-black font-bold uppercase py-5 tracking-[0.3em] hover:invert transition-all transform active:scale-95 shadow-[0_20px_50px_rgba(255,184,0,0.1)] mt-4">
+                                    {editingEvent ? "SALVA MODIFICHE" : "PUBBLICA EVENTO"}
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
