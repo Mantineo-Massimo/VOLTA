@@ -42,12 +42,13 @@ export default function Home() {
                                 src={heroImages[currentImg]}
                                 alt="VŌLTA Atmosphere"
                                 fill
-                                className="object-cover grayscale"
+                                className="object-cover grayscale brightness-50"
                                 priority
                             />
+                            <div className="absolute inset-0 bg-gold mix-blend-color opacity-30 z-10" />
                         </motion.div>
                     </AnimatePresence>
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black" />
                 </div>
 
                 {/* Hero Content */}
@@ -80,10 +81,10 @@ export default function Home() {
 
                     {/* Motto */}
                     <div className="flex flex-col gap-4">
-                        <h1 className="text-4xl md:text-8xl font-thin tracking-[0.15em] uppercase leading-tight">
-                            La s<span className="font-bold">VŌLTA</span><br />della settimana
+                        <h1 className="text-2xl md:text-6xl font-thin tracking-[0.1em] uppercase leading-tight whitespace-nowrap">
+                            La s<span className="font-bold text-gold">VŌLTA</span> della settimana
                         </h1>
-                        <p className="text-xs md:text-sm uppercase tracking-[0.4em] opacity-60">
+                        <p className="text-xs md:text-sm uppercase tracking-[0.4em] text-gold/60">
                             The Digital Core of Clubbing Excellence
                         </p>
                     </div>
@@ -95,7 +96,7 @@ export default function Home() {
                         className="mt-4"
                     >
                         <Link href="/events" className="brutalist-button text-lg flex items-center gap-4">
-                            Registrati stasera <ArrowRight size={20} />
+                            Scopri gli eventi <ArrowRight size={20} />
                         </Link>
                     </motion.div>
                 </motion.div>
@@ -130,15 +131,15 @@ export default function Home() {
                             Il lancio ufficiale della stagione. Un&apos;esperienza immersiva dove il digital incontra il brutalismo sonoro.
                         </p>
                         <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-4 text-white/40 uppercase text-sm font-bold tracking-widest">
-                                <Calendar size={18} /> 4 Aprile 2026
+                            <div className="flex items-center gap-4 text-gold/60 uppercase text-sm font-bold tracking-widest">
+                                <Calendar size={18} className="text-gold" /> 4 Aprile 2026
                             </div>
-                            <div className="flex items-center gap-4 text-white/40 uppercase text-sm font-bold tracking-widest">
-                                <Music size={18} /> Exclusive Guest DJ Set
+                            <div className="flex items-center gap-4 text-gold/60 uppercase text-sm font-bold tracking-widest">
+                                <Music size={18} className="text-gold" /> Exclusive Guest DJ Set
                             </div>
                         </div>
                         <Link href="/events" className="text-gold border-b-2 border-gold self-start font-bold uppercase tracking-widest pb-1 hover:text-white hover:border-white transition-colors">
-                            Prenota Posto in Lista
+                            Vedi Tutti gli Eventi
                         </Link>
                     </motion.div>
 
@@ -198,8 +199,8 @@ export default function Home() {
                 <div className="max-w-7xl mx-auto flex flex-col gap-12">
                     <div className="flex justify-between items-end">
                         <h2 className="text-4xl md:text-6xl font-bold uppercase tracking-tighter">Vibe Teaser</h2>
-                        <Link href="/gallery" className="text-white/40 font-bold uppercase tracking-widest text-xs hover:text-gold">
-                            Full Gallery <ArrowRight className="inline ml-1" size={14} />
+                        <Link href="/gallery" className="text-gold/60 font-bold uppercase tracking-widest text-xs hover:text-gold">
+                            Vedi Galleria <ArrowRight className="inline ml-1" size={14} />
                         </Link>
                     </div>
 
