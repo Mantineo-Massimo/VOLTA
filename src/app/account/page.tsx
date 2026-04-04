@@ -11,10 +11,12 @@ export default function Account() {
     const [showEventModal, setShowEventModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState<any>(null);
     const [events, setEvents] = useState([
-        { id: 1, name: "VŌLTA Premiere", date: "4 APR 26", loc: "MESSINA", regs: 248, desc: "Evento di lancio esclusivo.", time: "22:00" },
-        { id: 2, name: "TECHNO CLASH", date: "10 APR 26", loc: "TAORMINA", regs: 156, desc: "La sfida definitiva.", time: "23:00" },
-        { id: 3, name: "SICKO NIGHT", date: "12 APR 26", loc: "MILAZZO", regs: 92, desc: "Nightlife refinement.", time: "22:30" }
+        { id: 1, name: "VŌLTA Premiere", date: "4 APR 26", loc: "MESSINA", regs: 248, desc: "Evento di lancio esclusivo.", time: "22:00", dj: "CLARK", genre: "INDUSTRIAL", dresscode: true, entryType: "INVITE ONLY", isSoldOut: true, regLimit: 250 },
+        { id: 2, name: "TECHNO CLASH", date: "10 APR 26", loc: "TAORMINA", regs: 156, desc: "La sfida definitiva.", time: "23:00", dj: "KØDE", genre: "TECHNO", dresscode: false, entryType: "DOOR TAX", isSoldOut: false, regLimit: 300 },
+        { id: 3, name: "SICKO NIGHT", date: "12 APR 26", loc: "MILAZZO", regs: 92, desc: "Nightlife refinement.", time: "22:30", dj: "VNL", genre: "PHONK", dresscode: true, entryType: "WEB LIST", isSoldOut: false, regLimit: 150 }
     ]);
+
+    // ... (rest of search/role selection logic) ...
 
     // Initial Login / Role Selection Screen
     if (!isLoggedIn) {
@@ -442,7 +444,7 @@ export default function Account() {
                                 </button>
                             </div>
 
-                            <form className="space-y-8" onSubmit={(e) => {
+                            <form className="space-y-8 h-[60vh] overflow-y-auto pr-4 custom-scrollbar" onSubmit={(e) => {
                                 e.preventDefault();
                                 const formData = new FormData(e.currentTarget);
                                 const newEventData = {
@@ -452,6 +454,12 @@ export default function Account() {
                                     loc: formData.get('loc') as string,
                                     time: formData.get('time') as string,
                                     desc: formData.get('desc') as string,
+                                    dj: formData.get('dj') as string,
+                                    genre: formData.get('genre') as string,
+                                    dresscode: formData.get('dresscode') === 'on',
+                                    entryType: formData.get('entryType') as string,
+                                    isSoldOut: formData.get('isSoldOut') === 'on',
+                                    regLimit: parseInt(formData.get('regLimit') as string) || 0,
                                     regs: editingEvent ? editingEvent.regs : 0
                                 };
 
@@ -472,6 +480,14 @@ export default function Account() {
                                         <input required name="loc" defaultValue={editingEvent?.loc} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
                                     </div>
                                     <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">DJ Master</label>
+                                        <input required name="dj" defaultValue={editingEvent?.dj} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Genere Musicale</label>
+                                        <input required name="genre" defaultValue={editingEvent?.genre} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                    </div>
+                                    <div className="space-y-2">
                                         <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Data</label>
                                         <input required name="date" placeholder="DD MMM YY" defaultValue={editingEvent?.date} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
                                     </div>
@@ -479,10 +495,37 @@ export default function Account() {
                                         <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Orario</label>
                                         <input required name="time" type="time" defaultValue={editingEvent?.time} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
                                     </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Tipo Entrata</label>
+                                        <select name="entryType" defaultValue={editingEvent?.entryType || "WEB LIST"} className="w-full bg-black border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all">
+                                            <option value="WEB LIST">WEB LIST</option>
+                                            <option value="INVITE ONLY">INVITE ONLY</option>
+                                            <option value="DOOR TAX">DOOR TAX</option>
+                                            <option value="PRIVATE">PRIVATE</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Limite Registrazioni</label>
+                                        <input required name="regLimit" type="number" defaultValue={editingEvent?.regLimit} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all" />
+                                    </div>
                                 </div>
+
+                                <div className="grid grid-cols-2 gap-8">
+                                    <label className="flex items-center gap-4 cursor-pointer group">
+                                        <input type="checkbox" name="dresscode" defaultChecked={editingEvent?.dresscode} className="hidden peer" />
+                                        <div className="w-6 h-6 border border-white/20 peer-checked:bg-gold peer-checked:border-gold transition-all" />
+                                        <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-gold transition-colors">Richiesto Dresscode</span>
+                                    </label>
+                                    <label className="flex items-center gap-4 cursor-pointer group">
+                                        <input type="checkbox" name="isSoldOut" defaultChecked={editingEvent?.isSoldOut} className="hidden peer" />
+                                        <div className="w-6 h-6 border border-white/20 peer-checked:bg-red-500 peer-checked:border-red-500 transition-all" />
+                                        <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-red-500 transition-colors">Segna come Sold Out</span>
+                                    </label>
+                                </div>
+
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Descrizione Breve</label>
-                                    <textarea name="desc" rows={3} defaultValue={editingEvent?.desc} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all resize-none" />
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Descrizione dell'Evento</label>
+                                    <textarea name="desc" rows={4} defaultValue={editingEvent?.desc} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold outline-none transition-all resize-none" />
                                 </div>
 
                                 <button type="submit" className="w-full bg-gold text-black font-bold uppercase py-5 tracking-[0.3em] hover:invert transition-all transform active:scale-95 shadow-[0_20px_50px_rgba(255,184,0,0.1)] mt-4">
