@@ -38,6 +38,7 @@ export default function Gallery() {
                                 fill
                                 className="object-cover grayscale hover:grayscale-0 transition-all duration-500"
                             />
+                            <div className="absolute inset-0 bg-gold mix-blend-color opacity-20 z-10 group-hover:opacity-0 transition-opacity" />
                             {item.type === "video" && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                                     <div className="w-12 h-12 border-2 border-white rounded-full flex items-center justify-center">

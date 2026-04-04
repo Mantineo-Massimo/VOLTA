@@ -153,8 +153,9 @@ export default function Home() {
                             src="/assets/DSC_0395.JPG"
                             alt="Live at VŌLTA"
                             fill
-                            className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                            className="object-cover grayscale brightness-75 hover:grayscale-0 transition-all duration-700"
                         />
+                        <div className="absolute inset-0 bg-gold mix-blend-color opacity-20" />
                         <div className="absolute top-4 right-4 bg-gold text-black px-4 py-2 font-bold uppercase text-xs">
                             Limited Capacity
                         </div>
@@ -207,15 +208,19 @@ export default function Home() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-[400px]">
                         <div className="relative brutalist-border overflow-hidden">
                             <Image src="/assets/DSC_0036.JPG" alt="Vibe 1" fill className="object-cover grayscale hover:grayscale-0 transition-all duration-500" />
+                            <div className="absolute inset-0 bg-gold mix-blend-color opacity-20 z-10" />
                         </div>
                         <div className="relative brutalist-border overflow-hidden md:mt-12">
                             <Image src="/assets/DSC_0075.JPG" alt="Vibe 2" fill className="object-cover grayscale hover:grayscale-0 transition-all duration-500" />
+                            <div className="absolute inset-0 bg-gold mix-blend-color opacity-20 z-10" />
                         </div>
                         <div className="relative brutalist-border overflow-hidden">
                             <Image src="/assets/DSC_0175.JPG" alt="Vibe 3" fill className="object-cover grayscale hover:grayscale-0 transition-all duration-500" />
+                            <div className="absolute inset-0 bg-gold mix-blend-color opacity-20 z-10" />
                         </div>
                         <div className="relative brutalist-border overflow-hidden md:mt-12">
                             <Image src="/assets/DSC_0467.JPG" alt="Vibe 4" fill className="object-cover grayscale hover:grayscale-0 transition-all duration-500" />
+                            <div className="absolute inset-0 bg-gold mix-blend-color opacity-20 z-10" />
                         </div>
                     </div>
                 </div>
