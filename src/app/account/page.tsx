@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
     LayoutDashboard, Users, Calendar, Settings, Plus, Search,
     MoreVertical, Trash2, Edit, X, Check, Filter, Download,
@@ -10,17 +12,39 @@ import {
 } from "lucide-react";
 
 export default function Account() {
-    const [role, setRole] = useState<"user" | "venue" | "admin" | null>(null);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+    const { data: session, status } = useSession();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const mode = searchParams.get("mode");
+
+    const [events, setEvents] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
     const [showEventModal, setShowEventModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState<any>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [events, setEvents] = useState([
-        { id: 1, name: "VŌLTA Premiere", date: "4 APR 26", loc: "MESSINA", regs: 248, desc: "Evento di lancio esclusivo.", time: "22:00", dj: "CLARK", genre: "INDUSTRIAL", dresscode: true, entryType: "INVITE ONLY", isSoldOut: true, regLimit: 250 },
-        { id: 2, name: "TECHNO CLASH", date: "10 APR 26", loc: "TAORMINA", regs: 156, desc: "La sfida definitiva.", time: "23:00", dj: "KØDE", genre: "TECHNO", dresscode: false, entryType: "DOOR TAX", isSoldOut: false, regLimit: 300 },
-        { id: 3, name: "SICKO NIGHT", date: "12 APR 26", loc: "MILAZZO", regs: 92, desc: "Nightlife refinement.", time: "22:30", dj: "VNL", genre: "PHONK", dresscode: true, entryType: "WEB LIST", isSoldOut: false, regLimit: 150 }
-    ]);
+
+    // Auth Form State
+    const [authEmail, setAuthEmail] = useState("");
+    const [authPassword, setAuthPassword] = useState("");
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const res = await fetch("/api/events");
+                const data = await res.json();
+                setEvents(data);
+            } catch (err) {
+                console.error("Failed to fetch events");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchEvents();
+    }, []);
+
+    const role = (session?.user as any)?.role || null;
+    const isLoggedIn = status === "authenticated";
 
     // ... (rest of search/role selection logic) ...
 

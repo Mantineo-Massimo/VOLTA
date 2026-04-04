@@ -19,6 +19,8 @@ export const metadata: Metadata = {
     manifest: "/assets/favicon/site.webmanifest",
 };
 
+import { AuthProvider } from "@/components/AuthProvider";
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -27,11 +29,13 @@ export default function RootLayout({
     return (
         <html lang="it" className="bg-black">
             <body className={`${inter.className} min-h-screen flex flex-col`}>
-                <Navbar />
-                <main className="flex-grow">
-                    {children}
-                </main>
-                <Footer />
+                <AuthProvider>
+                    <Navbar />
+                    <main className="flex-grow">
+                        {children}
+                    </main>
+                    <Footer />
+                </AuthProvider>
             </body>
         </html>
     );
