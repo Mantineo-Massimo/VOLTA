@@ -1,8 +1,9 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar, MapPin, Music, X, ArrowRight, Info, CheckCircle2, Lock, User, Clock } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -64,18 +65,56 @@ const activeEvents = [
 ];
 
 export default function Events() {
-    const [selectedEvent, setSelectedEvent] = useState<typeof activeEvents[0] | null>(null);
+    const { data: session, status } = useSession();
+    const [activeEvents, setActiveEvents] = useState<any[]>([]);
+    const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
     const [isRegistered, setIsRegistered] = useState(false);
-    // Mock login state for demonstration
-    const [isLoggedIn] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const handleRegister = (e: React.FormEvent) => {
+    const isLoggedIn = status === "authenticated";
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const res = await fetch("/api/events");
+                const data = await res.json();
+                setActiveEvents(data);
+            } catch (err) {
+                console.error("Failed to fetch events");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchEvents();
+    }, []);
+
+    const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsRegistered(true);
-        setTimeout(() => {
-            setIsRegistered(false);
-            setSelectedEvent(null);
-        }, 3000);
+        try {
+            const res = await fetch("/api/registrations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ eventId: selectedEvent._id })
+            });
+
+            if (res.ok) {
+                setIsRegistered(true);
+                // Refresh event data to show updated regsCount
+                const updatedEventsRes = await fetch("/api/events");
+                const updatedEvents = await updatedEventsRes.json();
+                setActiveEvents(updatedEvents);
+
+                setTimeout(() => {
+                    setIsRegistered(false);
+                    setSelectedEvent(null);
+                }, 3000);
+            } else {
+                const data = await res.json();
+                alert(data.error || "Errore durante la registrazione");
+            }
+        } catch (err) {
+            console.error("Registration failed");
+        }
     };
 
     return (
@@ -105,74 +144,83 @@ export default function Events() {
                     </div>
                 </motion.div>
 
-                {/* Event Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {activeEvents.map((event, i) => (
-                        <motion.div
-                            key={event.id}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                            viewport={{ once: true }}
-                            className="group relative flex flex-col bg-white/5 rounded-3xl overflow-hidden border border-white/5 hover:border-gold/30 transition-all duration-500 cursor-pointer"
-                            onClick={() => setSelectedEvent(event)}
-                        >
-                            {/* Card Image */}
-                            <div className="aspect-[4/5] relative overflow-hidden">
-                                <Image
-                                    src={event.image}
-                                    alt={event.title}
-                                    fill
-                                    className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-                                <div className="absolute top-4 left-4">
-                                    <span className="bg-gold text-black text-[10px] font-bold uppercase px-3 py-1 rounded-full shadow-xl">
-                                        {event.status}
-                                    </span>
-                                </div>
-                            </div>
+                    {isLoading ? (
+                        [1, 2, 3].map(i => (
+                            <div key={i} className="aspect-[4/5] bg-white/5 animate-pulse rounded-3xl" />
+                        ))
+                    ) : activeEvents.map((event, i) => {
+                        const isFull = (event.regsCount || 0) >= event.regLimit;
+                        const statusLabel = event.isSoldOut || isFull ? "Sold Out" :
+                            (event.regsCount / event.regLimit > 0.8) ? "Low Availability" : "Upcoming";
 
-                            {/* Card Content */}
-                            <div className="p-8 flex flex-col flex-grow gap-6">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-4 text-gold uppercase text-[9px] font-bold tracking-[0.2em]">
-                                        <span>{event.date}</span>
-                                        <div className="w-1 h-1 rounded-full bg-gold/30" />
-                                        <span>{event.location}</span>
-                                    </div>
-                                    <h2 className="text-3xl font-bold uppercase tracking-tighter italic group-hover:text-gold transition-colors">{event.title}</h2>
-                                    <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">{event.genre}</p>
-                                </div>
-
-                                <div className="space-y-4 text-white/40 text-[10px] font-bold uppercase tracking-widest border-t border-white/5 pt-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <MapPin size={12} className="text-gold" />
-                                            <span>{event.venue}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <Clock size={12} className="text-gold" />
-                                            <span>{event.time.split(' - ')[0]}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3 text-white/80">
-                                            <Music size={12} className="text-gold" />
-                                            <span>{event.dj}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            {event.dresscode && <span className="border border-white/10 px-2 py-0.5 text-[8px]">DRESSCODE</span>}
-                                        </div>
+                        return (
+                            <motion.div
+                                key={event._id}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                viewport={{ once: true }}
+                                className="group relative flex flex-col bg-white/5 rounded-3xl overflow-hidden border border-white/5 hover:border-gold/30 transition-all duration-500 cursor-pointer"
+                                onClick={() => setSelectedEvent(event)}
+                            >
+                                {/* Card Image */}
+                                <div className="aspect-[4/5] relative overflow-hidden">
+                                    <Image
+                                        src={event.image || "/assets/DSC_0036.JPG"}
+                                        alt={event.title}
+                                        fill
+                                        className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                                    <div className="absolute top-4 left-4">
+                                        <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full shadow-xl ${statusLabel === 'Sold Out' ? 'bg-red-500 text-white' : 'bg-gold text-black'}`}>
+                                            {statusLabel}
+                                        </span>
                                     </div>
                                 </div>
 
-                                <button className="w-full mt-auto py-4 border border-white/10 uppercase text-[10px] font-bold tracking-[0.3em] group-hover:bg-white group-hover:text-black transition-all duration-500">
-                                    Dettagli Evento
-                                </button>
-                            </div>
-                        </motion.div>
-                    ))}
+                                {/* Card Content */}
+                                <div className="p-8 flex flex-col flex-grow gap-6">
+                                    <div className="space-y-2 text-left">
+                                        <div className="flex items-center gap-4 text-gold uppercase text-[9px] font-bold tracking-[0.2em]">
+                                            <span>{event.date}</span>
+                                            <div className="w-1 h-1 rounded-full bg-gold/30" />
+                                            <span>{event.location}</span>
+                                        </div>
+                                        <h2 className="text-3xl font-bold uppercase tracking-tighter italic group-hover:text-gold transition-colors">{event.title}</h2>
+                                        <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">{event.genre}</p>
+                                    </div>
+
+                                    <div className="space-y-4 text-white/40 text-[10px] font-bold uppercase tracking-widest border-t border-white/5 pt-6 text-left">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <MapPin size={12} className="text-gold" />
+                                                <span>{event.venue}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <Clock size={12} className="text-gold" />
+                                                <span>{event.time?.split(' - ')[0]}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3 text-white/80">
+                                                <Music size={12} className="text-gold" />
+                                                <span>{event.dj}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                {event.dresscode && <span className="border border-white/10 px-2 py-0.5 text-[8px]">DRESSCODE</span>}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button className="w-full mt-auto py-4 border border-white/10 uppercase text-[10px] font-bold tracking-[0.3em] group-hover:bg-white group-hover:text-black transition-all duration-500 rounded-xl">
+                                        Dettagli Evento
+                                    </button>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
                 </div>
 
                 {/* Footer Note */}
@@ -200,7 +248,7 @@ export default function Events() {
                             initial={{ scale: 0.9, opacity: 0, y: 40 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 40 }}
-                            className="relative w-full max-w-4xl bg-zinc-900/50 rounded-[2.5rem] border border-white/10 overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-auto"
+                            className="relative w-full max-w-4xl bg-zinc-900/50 rounded-[2.5rem] border border-white/10 overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-auto shadow-2xl"
                         >
                             {/* Close Button */}
                             <button
@@ -211,14 +259,16 @@ export default function Events() {
                             </button>
 
                             {/* Left: Stats & Specs */}
-                            <div className="flex-1 p-8 md:p-12 space-y-12 overflow-y-auto border-b md:border-b-0 md:border-r border-white/10">
+                            <div className="flex-1 p-10 md:p-14 space-y-12 overflow-y-auto border-b md:border-b-0 md:border-r border-white/10 text-left">
                                 <div className="space-y-4">
-                                    <span className="text-gold uppercase text-[10px] font-bold tracking-[0.5em] block">{selectedEvent.status}</span>
-                                    <h3 className="text-4xl md:text-6xl font-bold uppercase tracking-tighter leading-none italic">
+                                    <span className="text-gold uppercase text-[10px] font-bold tracking-[0.5em] block">
+                                        {selectedEvent.isSoldOut ? "Sold Out" : "Limited Access"}
+                                    </span>
+                                    <h3 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter leading-none italic">
                                         {selectedEvent.title}
                                     </h3>
-                                    <p className="text-white/60 text-sm font-thin uppercase leading-relaxed max-w-sm">
-                                        {selectedEvent.desc}
+                                    <p className="text-white/60 text-sm font-medium uppercase tracking-wide leading-relaxed max-w-sm italic">
+                                        {selectedEvent.description}
                                     </p>
                                 </div>
 
@@ -238,19 +288,21 @@ export default function Events() {
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Entry Access</p>
                                         <div className="flex items-center gap-2">
-                                            <p className="text-sm font-bold uppercase text-white">{selectedEvent.entryType || selectedEvent.price}</p>
+                                            <p className="text-sm font-bold uppercase text-white">{selectedEvent.entryType || "MEMBER ONLY"}</p>
                                         </div>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Availability</p>
-                                        <div className="flex flex-col gap-1">
-                                            <div className="h-1.5 w-full bg-white/5 overflow-hidden">
+                                    <div className="space-y-1 col-span-2">
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-2">Availability</p>
+                                        <div className="flex flex-col gap-2">
+                                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                                                 <div
-                                                    className={`h-full transition-all duration-1000 ${selectedEvent.regs >= selectedEvent.regLimit ? 'bg-red-500' : 'bg-gold'}`}
-                                                    style={{ width: `${Math.min(100, (selectedEvent.regs / selectedEvent.regLimit) * 100)}%` }}
+                                                    className={`h-full transition-all duration-1000 ${selectedEvent.regsCount >= selectedEvent.regLimit ? 'bg-red-500' : 'bg-gold'}`}
+                                                    style={{ width: `${Math.min(100, ((selectedEvent.regsCount || 0) / selectedEvent.regLimit) * 100)}%` }}
                                                 />
                                             </div>
-                                            <p className="text-[9px] font-bold text-white/40 uppercase">{selectedEvent.regs} / {selectedEvent.regLimit} REGISTERED</p>
+                                            <p className="text-[9px] font-extrabold text-white/40 uppercase tracking-widest">
+                                                {selectedEvent.regsCount || 0} / {selectedEvent.regLimit} REGISTERED GUEST
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -272,52 +324,60 @@ export default function Events() {
                             </div>
 
                             {/* Right: Auth Gate & Registration */}
-                            <div className="w-full md:w-[40%] bg-black/40 p-8 md:p-12 flex flex-col justify-center">
+                            <div className="w-full md:w-[40%] bg-white/[0.02] p-10 md:p-14 flex flex-col justify-center backdrop-blur-xl border-l border-white/5">
                                 {!isRegistered ? (
                                     <>
                                         {!isLoggedIn ? (
                                             <div className="space-y-8 text-center animate-in fade-in zoom-in duration-500">
-                                                <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6">
-                                                    <Lock size={32} className="text-gold" />
+                                                <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                                                    <Lock size={40} className="text-gold/40" />
                                                 </div>
-                                                <div className="space-y-2">
-                                                    <h4 className="text-xl font-bold uppercase">Accesso Richiesto</h4>
-                                                    <p className="text-[10px] font-bold uppercase text-white/40 tracking-widest leading-relaxed">
-                                                        Per riservare un posto devi essere un membro della community VŌLTA.
+                                                <div className="space-y-3">
+                                                    <h4 className="text-2xl font-bold uppercase tracking-tighter italic">Accesso Privato</h4>
+                                                    <p className="text-[10px] font-bold uppercase text-white/30 tracking-widest leading-relaxed">
+                                                        Per riservare il tuo posto devi essere autenticato nel sistema VŌLTA.
                                                     </p>
                                                 </div>
-                                                <div className="space-y-4 pt-4">
+                                                <div className="space-y-4 pt-6">
                                                     <Link
                                                         href="/account"
-                                                        className="block w-full bg-white text-black p-5 rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-gold transition-all"
+                                                        className="block w-full bg-white text-black py-5 rounded-2xl font-bold uppercase text-[10px] tracking-[0.3em] hover:bg-gold transition-all"
                                                     >
-                                                        Accedi ora
+                                                        Login / Accesso
                                                     </Link>
                                                     <Link
                                                         href="/account?mode=signup"
-                                                        className="block w-full border border-white/10 p-5 rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all"
+                                                        className="block w-full border border-white/10 py-5 rounded-2xl font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-white/10 transition-all text-white/40"
                                                     >
-                                                        Crea Account
+                                                        Crea Profilo
                                                     </Link>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="space-y-8 animate-in slide-in-from-right duration-500">
-                                                <div className="flex items-center gap-3 mb-8">
-                                                    <User size={16} className="text-gold" />
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">Prenota come Member</span>
-                                                </div>
-                                                <form onSubmit={handleRegister} className="space-y-4">
-                                                    <div className="space-y-4 text-xs font-bold uppercase tracking-widest">
-                                                        <input required placeholder="Telefono" className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 outline-none focus:border-gold transition-colors" />
-                                                        <div className="p-4 rounded-2xl bg-gold/5 border border-gold/10 text-[9px] text-gold/80 leading-relaxed uppercase">
-                                                            I tuoi dati (Nome ed Email) verranno estratti automaticamente dal tuo profilo VŌLTA.
-                                                        </div>
+                                            <div className="space-y-10 animate-in slide-in-from-right duration-500 text-center">
+                                                <div className="space-y-4">
+                                                    <div className="w-24 h-24 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto shadow-[0_0_50px_rgba(255,184,0,0.05)]">
+                                                        <User size={40} className="text-gold" />
                                                     </div>
-                                                    <button className="w-full bg-gold text-black p-5 rounded-2xl font-bold uppercase text-xs tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
-                                                        Conferma Prenotazione
-                                                    </button>
-                                                </form>
+                                                    <div>
+                                                        <h4 className="text-2xl font-bold uppercase tracking-tighter italic">One-Click Booking</h4>
+                                                        <p className="text-[10px] font-bold uppercase text-white/30 tracking-widest mt-2">{session?.user?.name}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 text-[9px] text-white/40 leading-relaxed uppercase tracking-widest text-justify italic">
+                                                    Con la registrazione il tuo nominativo verrà inserito automaticamente nella guest list ufficiale di VŌLTA. Riceverai una conferma digitale via email.
+                                                </div>
+
+                                                <button
+                                                    onClick={handleRegister}
+                                                    disabled={selectedEvent.regsCount >= selectedEvent.regLimit}
+                                                    className="w-full bg-gold text-black py-6 rounded-[2rem] font-extrabold uppercase text-xs tracking-[0.4em] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale"
+                                                >
+                                                    RISERVA POSTO
+                                                </button>
+
+                                                <p className="text-[8px] uppercase font-bold text-white/20 tracking-[0.5em]">System Verified</p>
                                             </div>
                                         )}
                                     </>
@@ -325,15 +385,20 @@ export default function Events() {
                                     <motion.div
                                         initial={{ opacity: 0, scale: 0.8 }}
                                         animate={{ opacity: 1, scale: 1 }}
-                                        className="flex flex-col items-center text-center gap-6"
+                                        className="flex flex-col items-center text-center gap-8"
                                     >
-                                        <div className="w-20 h-20 rounded-full bg-gold text-black flex items-center justify-center shadow-[0_0_50px_rgba(255,184,0,0.3)]">
-                                            <CheckCircle2 size={40} />
+                                        <div className="w-28 h-28 rounded-full bg-gold text-black flex items-center justify-center shadow-[0_0_80px_rgba(255,184,0,0.4)]">
+                                            <CheckCircle2 size={56} />
                                         </div>
-                                        <h4 className="text-2xl font-bold uppercase tracking-tighter">Prenotato!</h4>
-                                        <p className="text-[10px] font-bold uppercase text-white/40 tracking-widest leading-relaxed">
-                                            Riceverai una conferma digitale a breve.
-                                        </p>
+                                        <div className="space-y-3">
+                                            <h4 className="text-3xl font-extrabold uppercase tracking-tighter italic text-gold">Successo!</h4>
+                                            <p className="text-[10px] font-bold uppercase text-white/40 tracking-widest leading-relaxed max-w-[200px] mx-auto">
+                                                Il tuo posto per {selectedEvent.title} è stato riservato correttamente.
+                                            </p>
+                                        </div>
+                                        <div className="mt-4 text-[9px] font-bold uppercase text-gold/60 border border-gold/20 px-8 py-3 rounded-full animate-pulse">
+                                            Email in arrivo...
+                                        </div>
                                     </motion.div>
                                 )}
                             </div>
