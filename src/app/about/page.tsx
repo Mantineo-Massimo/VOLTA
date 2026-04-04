@@ -51,7 +51,7 @@ export default function About() {
                     >
                         <div className="flex-1 flex flex-col gap-6">
                             <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-tight">{section.title}</h2>
-                            <p className="text-lg md:text-xl text-white/70 leading-relaxed font-thin">
+                            <p className="text-lg md:text-xl text-white/80 leading-relaxed font-thin">
                                 {section.content}
                             </p>
                             {section.id === 'collaborate' && (
@@ -65,8 +65,9 @@ export default function About() {
                                 src={section.image}
                                 alt={section.title}
                                 fill
-                                className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                                className="object-cover grayscale brightness-75 hover:grayscale-0 transition-all duration-700"
                             />
+                            <div className="absolute inset-0 bg-gold mix-blend-color opacity-20 z-10" />
                         </div>
                     </motion.section>
                 ))}

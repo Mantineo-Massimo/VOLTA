@@ -48,7 +48,7 @@ export default function Home() {
                             <div className="absolute inset-0 bg-gold mix-blend-color opacity-30 z-10" />
                         </motion.div>
                     </AnimatePresence>
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/0 to-black" />
                 </div>
 
                 {/* Hero Content */}
@@ -127,7 +127,7 @@ export default function Home() {
                         <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter">
                             VŌLTA Premiere<br /><span className="font-thin text-white/50 underline decoration-gold underline-offset-8">Messina</span>
                         </h2>
-                        <p className="text-xl font-thin text-white/70 max-w-md">
+                        <p className="text-xl font-thin text-white/80 max-w-md">
                             Il lancio ufficiale della stagione. Un&apos;esperienza immersiva dove il digital incontra il brutalismo sonoro.
                         </p>
                         <div className="flex flex-col gap-4">
