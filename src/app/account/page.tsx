@@ -235,13 +235,24 @@ function AccountContent() {
                         ]);
                     if (profileError) console.error("Profile creation error:", profileError);
 
-                    setAuthMessage({
-                        type: 'success',
-                        text: "Registrazione avvenuta con successo! Controlla la tua email per confermare l'account."
-                    });
+                    if (authData.session) {
+                        setAuthMessage({
+                            type: 'success',
+                            text: "REGISTRAZIONE COMPLETATA. ACCESSO IN CORSO..."
+                        });
+                        // Clear fields
+                        setAuthEmail("");
+                        setAuthPassword("");
+                        setAuthName("");
+                    } else {
+                        setAuthMessage({
+                            type: 'success',
+                            text: "MEMBERSHIP CREATA. CONTROLLA LA TUA EMAIL PER ATTIVARE IL PROFILO."
+                        });
+                    }
                 }
             } catch (err: any) {
-                setAuthMessage({ type: 'error', text: err.message || "Errore durante la registrazione" });
+                setAuthMessage({ type: 'error', text: err.message?.toUpperCase() || "ERRORE DURANTE LA REGISTRAZIONE" });
             }
         } else {
             const { error } = await supabase.auth.signInWithPassword({
