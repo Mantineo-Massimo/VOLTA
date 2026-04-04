@@ -103,14 +103,14 @@ function AccountContent() {
                 try {
                     const { data, error } = await supabase
                         .from('registrations')
-                        .select('*, profiles(name, email)') // Note: joined with profiles
+                        .select('*, profiles(full_name, email)') // Note: joined with profiles
                         .eq('event_id', selectedEventId);
 
                     if (data) {
                         // Map the joined profile data to match existing UI structure
                         const mappedData = data.map((reg: any) => ({
                             ...reg,
-                            userId: reg.profiles // This matches the userId.name access in UI
+                            userId: reg.profiles // This matches the userId.full_name access in UI
                         }));
                         setRegistrations(mappedData);
                     }
@@ -230,7 +230,7 @@ function AccountContent() {
                     const { error: profileError } = await supabase
                         .from('profiles')
                         .insert([
-                            { id: authData.user.id, name: authName, role: 'user' }
+                            { id: authData.user.id, full_name: authName, email: authEmail, role: 'user' }
                         ]);
                     if (profileError) console.error("Profile creation error:", profileError);
                 }
