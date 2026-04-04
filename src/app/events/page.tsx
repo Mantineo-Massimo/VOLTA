@@ -216,7 +216,12 @@ export default function Events() {
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Entry Style</p>
-                                        <p className="text-xs font-bold uppercase text-white">{selectedEvent.price}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-xs font-bold uppercase text-white">{selectedEvent.price}</p>
+                                            {selectedEvent.status === "Sold Out" && (
+                                                <span className="bg-red-500 text-white text-[8px] px-2 py-0.5 font-bold uppercase">Sold Out</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
