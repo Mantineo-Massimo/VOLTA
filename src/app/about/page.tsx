@@ -1,9 +1,9 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, useInView } from "framer-motion";
 import Image from "next/image";
-import { useRef } from "react";
-import { ArrowRight, Code, Users, Zap } from "lucide-react";
+import { useRef, useEffect, useState } from "react";
+import { ArrowRight, Code, Users, Zap, TrendingUp } from "lucide-react";
 
 const sections = [
     {
@@ -32,6 +32,45 @@ const sections = [
     }
 ];
 
+const stats = [
+    { label: "Community Members", value: 15000, suffix: "+" },
+    { label: "Events Managed", value: 50, suffix: "+" },
+    { label: "Partner Clubs", value: 12, suffix: "" },
+    { label: "Guest Satisfaction", value: 98, suffix: "%" },
+];
+
+function Counter({ value, suffix }: { value: number; suffix: string }) {
+    const ref = useRef(null);
+    const inView = useInView(ref, { once: true });
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+        if (inView) {
+            let start = 0;
+            const end = value;
+            const duration = 2000;
+            const increment = end / (duration / 16);
+
+            const timer = setInterval(() => {
+                start += increment;
+                if (start >= end) {
+                    setDisplayValue(end);
+                    clearInterval(timer);
+                } else {
+                    setDisplayValue(Math.floor(start));
+                }
+            }, 16);
+            return () => clearInterval(timer);
+        }
+    }, [inView, value]);
+
+    return (
+        <span ref={ref} className="text-gold font-bold tabular-nums">
+            {displayValue.toLocaleString()}{suffix}
+        </span>
+    );
+}
+
 export default function About() {
     const containerRef = useRef(null);
     const { scrollYProgress } = useScroll({
@@ -48,8 +87,8 @@ export default function About() {
                     className="z-10 text-center space-y-6"
                 >
                     <motion.span
-                        initial={{ opacity: 0, tracking: "0.5em" }}
-                        animate={{ opacity: 1, tracking: "1em" }}
+                        initial={{ opacity: 0, letterSpacing: "0.5em" }}
+                        animate={{ opacity: 1, letterSpacing: "1em" }}
                         className="text-gold uppercase text-[10px] md:text-xs font-bold block"
                     >
                         VŌLTA / STORY
@@ -122,6 +161,30 @@ export default function About() {
                         </div>
                     </div>
                 ))}
+
+                {/* Statistics Section */}
+                <motion.section
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    className="py-12"
+                >
+                    <div className="flex items-center gap-4 mb-16">
+                        <TrendingUp className="text-gold" size={20} />
+                        <span className="text-xs font-bold uppercase tracking-[0.5em] text-white/40">Power in Numbers</span>
+                    </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
+                        {stats.map((stat, i) => (
+                            <div key={i} className="space-y-2">
+                                <p className="text-4xl md:text-7xl">
+                                    <Counter value={stat.value} suffix={stat.suffix} />
+                                </p>
+                                <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/40">
+                                    {stat.label}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </motion.section>
 
                 {/* Modern Quote / Closing Section */}
                 <motion.section
