@@ -193,7 +193,7 @@ export default function About() {
                     className="py-32 border-y border-white/10 text-center space-y-12"
                 >
                     <p className="text-2xl md:text-5xl font-thin uppercase tracking-tight max-w-4xl mx-auto leading-tight italic">
-                        &quot; <span className="text-gold font-bold not-italic">VŌLTA</span> è il punto di rottura tra la notte tradizionale e il <span className="text-gold font-bold not-italic">futuro digitale</span> del divertimento.&quot;
+                        &quot; <span className="text-gold font-bold not-italic">VŌLTA</span> è il punto di rottura tra la notte tradizionale e il <span className="text-gold font-bold not-italic">futuro</span> del divertimento.&quot;
                     </p>
                     <div className="flex flex-col md:flex-row justify-center items-center gap-8 text-[10px] uppercase font-bold tracking-[0.5em] text-white/40">
                         <span>Milazzo</span>
