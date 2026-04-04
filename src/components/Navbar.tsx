@@ -35,7 +35,7 @@ export default function Navbar() {
                         <Link
                             key={link.name}
                             href={link.href}
-                            className="text-sm font-bold uppercase tracking-widest hover:text-neon transition-colors"
+                            className="text-sm font-bold uppercase tracking-widest hover:text-gold transition-colors"
                         >
                             {link.name}
                         </Link>
@@ -58,7 +58,7 @@ export default function Navbar() {
                         <Link
                             key={link.name}
                             href={link.href}
-                            className="text-2xl font-bold uppercase tracking-tighter hover:text-neon"
+                            className="text-2xl font-bold uppercase tracking-tighter hover:text-gold"
                             onClick={() => setIsOpen(false)}
                         >
                             {link.name}

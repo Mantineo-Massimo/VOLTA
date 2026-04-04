@@ -9,7 +9,7 @@ export default function Home() {
         <div className="relative min-h-screen flex flex-col items-center justify-center bg-black overflow-hidden px-6">
             {/* Background Ambience */}
             <div className="absolute inset-0 opacity-20">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-neon blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gold blur-[120px] rounded-full animate-pulse" />
             </div>
 
             {/* Hero Section */}
@@ -44,7 +44,7 @@ export default function Home() {
                 {/* Motto */}
                 <div className="flex flex-col gap-2">
                     <h1 className="text-4xl md:text-7xl font-thin tracking-[0.2em] uppercase text-white">
-                        La <span className="font-bold">sVŌLTA</span> della settimana
+                        La s<span className="font-bold">VŌLTA</span> della settimana
                     </h1>
                 </div>
 

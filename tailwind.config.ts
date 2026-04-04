@@ -11,11 +11,7 @@ const config: Config = {
             colors: {
                 background: "#000000",
                 foreground: "#ffffff",
-                neon: {
-                    DEFAULT: "#ccff00", // A neon lime/yellow for brutalist accent
-                    blue: "#00f0ff",
-                    purple: "#bf00ff",
-                },
+                gold: "#FFB800", // Giallo arancio dorato
             },
             fontFamily: {
                 inter: ["Inter", "sans-serif"],

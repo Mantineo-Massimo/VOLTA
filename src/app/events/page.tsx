@@ -30,9 +30,9 @@ export default function Events() {
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    className="flex flex-col gap-4 border-l-4 border-neon pl-6"
+                    className="flex flex-col gap-4 border-l-4 border-gold pl-6"
                 >
-                    <span className="text-neon uppercase tracking-widest font-bold">Calendario Settimanale</span>
+                    <span className="text-gold uppercase tracking-widest font-bold">Calendario Settimanale</span>
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase">Il Core Business</h1>
                     <p className="text-xs text-white/40 uppercase tracking-widest">
                         Nota Fiscale: Il pagamento avviene esclusivamente al locale al momento dell'ingresso.
@@ -50,22 +50,22 @@ export default function Events() {
                         >
                             <div className="flex justify-between items-start">
                                 <h2 className="text-3xl font-bold uppercase">{event.title}</h2>
-                                <span className="bg-neon text-black px-3 py-1 font-bold text-xs uppercase tracking-tighter">
+                                <span className="bg-gold text-black px-3 py-1 font-bold text-xs uppercase tracking-tighter">
                                     Sold Out Near
                                 </span>
                             </div>
 
                             <div className="flex flex-col gap-3 text-white/70">
                                 <div className="flex items-center gap-3">
-                                    <Calendar size={18} className="text-neon" />
+                                    <Calendar size={18} className="text-gold" />
                                     <span className="uppercase text-sm">{event.date}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <MapPin size={18} className="text-neon" />
+                                    <MapPin size={18} className="text-gold" />
                                     <span className="uppercase text-sm">{event.location}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <Music size={18} className="text-neon" />
+                                    <Music size={18} className="text-gold" />
                                     <span className="uppercase text-sm">{event.dj}</span>
                                 </div>
                             </div>
@@ -80,12 +80,12 @@ export default function Events() {
                                 <input
                                     type="text"
                                     placeholder="Nome e Cognome"
-                                    className="bg-transparent border border-white/20 p-2 text-sm focus:border-neon outline-none"
+                                    className="bg-transparent border border-white/20 p-2 text-sm focus:border-gold outline-none"
                                 />
                                 <input
                                     type="email"
                                     placeholder="Email"
-                                    className="bg-transparent border border-white/20 p-2 text-sm focus:border-neon outline-none"
+                                    className="bg-transparent border border-white/20 p-2 text-sm focus:border-gold outline-none"
                                 />
                                 <label className="flex items-start gap-2 text-[10px] text-white/50 uppercase cursor-pointer">
                                     <input type="checkbox" className="mt-1" />

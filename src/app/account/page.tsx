@@ -17,15 +17,15 @@ export default function Account() {
                         onClick={() => { setRole("user"); setIsLoggedIn(true); }}
                         className="brutalist-card hover:bg-white/5 transition-colors group text-left"
                     >
-                        <LogIn className="mb-4 text-neon group-hover:scale-110 transition-transform" size={48} />
+                        <LogIn className="mb-4 text-gold group-hover:scale-110 transition-transform" size={48} />
                         <h2 className="text-3xl font-bold uppercase mb-2">User Side</h2>
                         <p className="font-thin text-white/60 uppercase text-xs tracking-widest">Accedi per i tuoi QR Code ed eventi.</p>
                     </button>
                     <button
                         onClick={() => { setRole("venue"); setIsLoggedIn(true); }}
-                        className="brutalist-card hover:bg-white/5 transition-colors group text-left border-neon"
+                        className="brutalist-card hover:bg-white/5 transition-colors group text-left border-gold"
                     >
-                        <Users className="mb-4 text-neon group-hover:scale-110 transition-transform" size={48} />
+                        <Users className="mb-4 text-gold group-hover:scale-110 transition-transform" size={48} />
                         <h2 className="text-3xl font-bold uppercase mb-2">Venue Side</h2>
                         <p className="font-thin text-white/60 uppercase text-xs tracking-widest">Dashboard riservata ai locali & check-in.</p>
                     </button>
@@ -43,7 +43,7 @@ export default function Account() {
                     </h1>
                     <button
                         onClick={() => setIsLoggedIn(false)}
-                        className="text-[10px] uppercase tracking-widest hover:text-neon underline"
+                        className="text-[10px] uppercase tracking-widest hover:text-gold underline"
                     >
                         Esci
                     </button>
@@ -71,11 +71,11 @@ export default function Account() {
                             <ul className="flex flex-col gap-4 text-sm font-thin">
                                 <li className="flex justify-between items-center border-b border-white/10 py-2">
                                     <span>Season Opening 2023</span>
-                                    <CheckCircle size={16} className="text-neon" />
+                                    <CheckCircle size={16} className="text-gold" />
                                 </li>
                                 <li className="flex justify-between items-center border-b border-white/10 py-2">
                                     <span>Winter Gala</span>
-                                    <CheckCircle size={16} className="text-neon" />
+                                    <CheckCircle size={16} className="text-gold" />
                                 </li>
                             </ul>
                         </div>
@@ -85,11 +85,11 @@ export default function Account() {
                         {/* Venue Dashboard */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             <div className="brutalist-card text-center flex flex-col gap-2">
-                                <span className="text-neon text-4xl font-bold">128</span>
+                                <span className="text-gold text-4xl font-bold">128</span>
                                 <span className="text-[10px] uppercase font-bold">Registrati</span>
                             </div>
                             <div className="brutalist-card text-center flex flex-col gap-2">
-                                <span className="text-neon text-4xl font-bold">45</span>
+                                <span className="text-gold text-4xl font-bold">45</span>
                                 <span className="text-[10px] uppercase font-bold">Check-in effettuati</span>
                             </div>
                         </div>
@@ -110,9 +110,9 @@ export default function Account() {
                                         <tr className="border-b border-white/10 text-sm font-thin">
                                             <td className="py-4 font-bold">Massimiliano Rossi</td>
                                             <td className="py-4 uppercase">Web Registration</td>
-                                            <td className="py-4 text-neon uppercase">Ready</td>
+                                            <td className="py-4 text-gold uppercase">Ready</td>
                                             <td className="py-4">
-                                                <button className="bg-neon text-black px-4 py-1 font-bold text-[10px] hover:invert transition-all">CHECK-IN</button>
+                                                <button className="bg-gold text-black px-4 py-1 font-bold text-[10px] hover:invert transition-all">CHECK-IN</button>
                                             </td>
                                         </tr>
                                         <tr className="border-b border-white/10 text-sm font-thin opacity-30">

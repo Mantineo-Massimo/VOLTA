@@ -20,7 +20,7 @@ export default function Gallery() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     className="flex flex-col gap-4 text-center md:text-left"
                 >
-                    <span className="text-neon uppercase tracking-widest font-bold">Visual Experience</span>
+                    <span className="text-gold uppercase tracking-widest font-bold">Visual Experience</span>
                     <h1 className="text-5xl md:text-8xl font-bold tracking-tighter uppercase">Galleria</h1>
                 </motion.div>
 
@@ -50,7 +50,7 @@ export default function Gallery() {
                 </div>
 
                 {/* Video Recap Section */}
-                <div className="mt-24 border-t-4 border-neon pt-12 flex flex-col gap-8">
+                <div className="mt-24 border-t-4 border-gold pt-12 flex flex-col gap-8">
                     <h2 className="text-3xl font-bold uppercase tracking-tighter">Video Recap (TikTok Style)</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         {[1, 2, 3].map((i) => (
@@ -61,7 +61,7 @@ export default function Gallery() {
                                     fill
                                     className="object-cover opacity-30 group-hover:opacity-100 transition-opacity"
                                 />
-                                <span className="z-10 font-bold uppercase tracking-widest border border-white px-4 py-2 bg-black group-hover:bg-neon group-hover:text-black transition-colors">
+                                <span className="z-10 font-bold uppercase tracking-widest border border-white px-4 py-2 bg-black group-hover:bg-gold group-hover:text-black transition-colors">
                                     Guarda Reel {i}
                                 </span>
                             </div>

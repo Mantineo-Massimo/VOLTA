@@ -34,7 +34,7 @@ export default function About() {
                     whileInView={{ opacity: 1, y: 0 }}
                     className="flex flex-col gap-4"
                 >
-                    <span className="text-neon uppercase tracking-widest font-bold">Brand & Vision</span>
+                    <span className="text-gold uppercase tracking-widest font-bold">Brand & Vision</span>
                     <h1 className="text-5xl md:text-8xl font-bold tracking-tighter uppercase whitespace-pre-line">
                         Più di un evento,{"\n"}un movimento.
                     </h1>
