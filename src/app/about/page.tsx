@@ -196,11 +196,11 @@ export default function About() {
                         &quot; <span className="text-gold font-bold not-italic">VŌLTA</span> è il punto di rottura tra la notte tradizionale e il <span className="text-gold font-bold not-italic">futuro digitale</span> del divertimento.&quot;
                     </p>
                     <div className="flex flex-col md:flex-row justify-center items-center gap-8 text-[10px] uppercase font-bold tracking-[0.5em] text-white/40">
+                        <span>Milazzo</span>
+                        <div className="w-2 h-2 rounded-full bg-gold" />
                         <span>Messina</span>
                         <div className="w-2 h-2 rounded-full bg-gold" />
-                        <span>Milano</span>
-                        <div className="w-2 h-2 rounded-full bg-gold" />
-                        <span>Ibiza</span>
+                        <span>Taormina</span>
                     </div>
                 </motion.section>
             </div>
