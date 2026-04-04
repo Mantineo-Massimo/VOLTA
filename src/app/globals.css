@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --neon: 65 100% 50%;
+    /* #ccff00 roughly */
+}
+
+body {
+    color: rgb(var(--foreground));
+    background: rgb(var(--background));
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+@layer base {
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+}
+
+/* Brutalist Custom Styles */
+.brutalist-border {
+    border: 1px solid #ffffff;
+}
+
+.brutalist-button {
+    background: #ffffff;
+    color: #000000;
+    padding: 0.5rem 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    border: 4px solid #ffffff;
+}
+
+.brutalist-button:hover {
+    background: #000000;
+    color: #ffffff;
+    box-shadow: 8px 8px 0px #ccff00;
+    transform: translate(-4px, -4px);
+}
+
+.brutalist-card {
+    border: 2px solid #ffffff;
+    background: #000000;
+    padding: 1.5rem;
+}
+
+.neon-glow {
+    text-shadow: 0 0 10px #ccff00, 0 0 20px #ccff00, 0 0 40px #ccff00;
+}
