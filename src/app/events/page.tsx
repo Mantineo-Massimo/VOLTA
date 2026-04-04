@@ -90,7 +90,7 @@ export default function Events() {
                             <Info size={14} />
                             <span className="text-[10px] uppercase font-bold tracking-widest">Informazioni</span>
                         </div>
-                        <p className="text-xs uppercase font-bold tracking-widest text-white/60 leading-relaxed">
+                        <p className="text-xs uppercase font-bold tracking-widest text-white/60 leading-relaxed text-justify">
                             L'accesso agli eventi VŌLTA è strettamente su prenotazione. La registrazione online non garantisce l'accesso prioritario.
                         </p>
                     </div>
