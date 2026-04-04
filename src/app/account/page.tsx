@@ -207,6 +207,7 @@ function AccountContent() {
 
     const [isSignup, setIsSignup] = useState(mode === "signup");
     const [authName, setAuthName] = useState("");
+    const [authMessage, setAuthMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -233,9 +234,14 @@ function AccountContent() {
                             { id: authData.user.id, full_name: authName, email: authEmail, role: 'user' }
                         ]);
                     if (profileError) console.error("Profile creation error:", profileError);
+
+                    setAuthMessage({
+                        type: 'success',
+                        text: "Registrazione avvenuta con successo! Controlla la tua email per confermare l'account."
+                    });
                 }
             } catch (err: any) {
-                alert(err.message || "Errore durante la registrazione");
+                setAuthMessage({ type: 'error', text: err.message || "Errore durante la registrazione" });
             }
         } else {
             const { error } = await supabase.auth.signInWithPassword({
@@ -243,7 +249,7 @@ function AccountContent() {
                 password: authPassword,
             });
             if (error) {
-                alert("Credenziali non valide: " + error.message);
+                setAuthMessage({ type: 'error', text: "Credenziali non valide: " + error.message });
             }
         }
     };
@@ -268,6 +274,16 @@ function AccountContent() {
                     </div>
 
                     <form onSubmit={handleAuth} className="space-y-6 bg-white/5 p-10 border border-white/10 rounded-sm backdrop-blur-xl">
+                        {authMessage && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className={`p-4 border text-[11px] uppercase tracking-widest font-bold ${authMessage.type === 'success' ? 'bg-gold/10 border-gold/40 text-gold' : 'bg-red-500/10 border-red-500/40 text-red-500'
+                                    }`}
+                            >
+                                {authMessage.text}
+                            </motion.div>
+                        )}
                         <div className="space-y-4">
                             {isSignup && (
                                 <div className="space-y-1">
