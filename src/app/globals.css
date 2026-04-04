@@ -3,10 +3,9 @@
 @tailwind utilities;
 
 :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-    --gold: 43 100% 50%;
-    /* #FFB800 roughly */
+    --background: 0 0 0;
+    --foreground: 255 255 255;
+    --gold: 255 184 0;
 }
 
 body {
