@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -11,7 +11,7 @@ import {
     Upload, ImageIcon, ArrowRight, Activity, ShieldCheck, CheckCircle2, User
 } from "lucide-react";
 
-export default function Account() {
+function AccountContent() {
     const supabase = createClient();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -659,5 +659,17 @@ export default function Account() {
                 )}
             </AnimatePresence>
         </div>
+    );
+}
+
+export default function Account() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+            </div>
+        }>
+            <AccountContent />
+        </Suspense>
     );
 }
