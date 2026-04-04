@@ -2,20 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import {
     LayoutDashboard, Users, Calendar, Settings, Plus, Search,
     MoreVertical, Trash2, Edit, X, Check, Filter, Download,
     Music, MapPin, Clock, Info, Shield, LogOut, QrCode, Ticket,
-    Upload, Image as ImageIcon, ArrowRight, Activity, ShieldCheck, CheckCircle2, User
+    Upload, ImageIcon, ArrowRight, Activity, ShieldCheck, CheckCircle2, User
 } from "lucide-react";
 
 export default function Account() {
-    const { data: session, status } = useSession();
+    const supabase = createClient();
     const router = useRouter();
     const searchParams = useSearchParams();
     const mode = searchParams.get("mode");
+
+    const [user, setUser] = useState<any>(null);
+    const [profile, setProfile] = useState<any>(null);
+    const [status, setStatus] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
 
     const [events, setEvents] = useState<any[]>([]);
     const [registrations, setRegistrations] = useState<any[]>([]);
@@ -31,11 +35,55 @@ export default function Account() {
     const [authPassword, setAuthPassword] = useState("");
 
     useEffect(() => {
+        const getSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                setUser(session.user);
+                // Fetch profile for role
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+                setProfile(profile);
+                setStatus("authenticated");
+            } else {
+                setStatus("unauthenticated");
+            }
+        };
+        getSession();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (session) {
+                setUser(session.user);
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+                setProfile(profile);
+                setStatus("authenticated");
+            } else {
+                setUser(null);
+                setProfile(null);
+                setStatus("unauthenticated");
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const res = await fetch("/api/events");
-                const data = await res.json();
-                setEvents(data);
+                // Using Supabase client directly for events
+                const { data, error } = await supabase
+                    .from('events')
+                    .select('*')
+                    .order('date', { ascending: true });
+
+                if (data) setEvents(data);
+                if (error) throw error;
             } catch (err) {
                 console.error("Failed to fetch events");
             } finally {
@@ -45,7 +93,7 @@ export default function Account() {
         fetchEvents();
     }, []);
 
-    const role = (session?.user as any)?.role || null;
+    const role = profile?.role || null;
     const isLoggedIn = status === "authenticated";
 
     useEffect(() => {
@@ -53,9 +101,20 @@ export default function Account() {
             const fetchRegs = async () => {
                 setIsLoadingRegs(true);
                 try {
-                    const res = await fetch(`/api/registrations?eventId=${selectedEventId}`);
-                    const data = await res.json();
-                    setRegistrations(data);
+                    const { data, error } = await supabase
+                        .from('registrations')
+                        .select('*, profiles(name, email)') // Note: joined with profiles
+                        .eq('event_id', selectedEventId);
+
+                    if (data) {
+                        // Map the joined profile data to match existing UI structure
+                        const mappedData = data.map((reg: any) => ({
+                            ...reg,
+                            userId: reg.profiles // This matches the userId.name access in UI
+                        }));
+                        setRegistrations(mappedData);
+                    }
+                    if (error) throw error;
                 } catch (err) {
                     console.error("Failed to fetch registrations");
                 } finally {
@@ -71,38 +130,59 @@ export default function Account() {
         const formData = new FormData(e.target as HTMLFormElement);
         const eventData: any = {
             dresscode: false,
-            isSoldOut: false
+            is_sold_out: false // Using snake_case for Supabase usually, but I'll stick to what I planned in SQL
         };
         formData.forEach((value, key) => {
             if (key === 'dresscode' || key === 'isSoldOut') {
-                eventData[key] = value === 'on';
+                eventData[key === 'isSoldOut' ? 'is_sold_out' : key] = value === 'on';
             } else if (key === 'regLimit') {
-                eventData[key] = parseInt(value as string) || 0;
-            } else if (key !== 'imageFile') {
-                eventData[key] = value;
+                eventData.reg_limit = parseInt(value as string) || 0;
+            } else if (key === 'imageFile') {
+                // skip
+            } else {
+                // Map camelCase to snake_case for SQL if needed, but I'll use the SQL names
+                const mapping: Record<string, string> = {
+                    title: 'title',
+                    location: 'location',
+                    dj: 'dj',
+                    genre: 'genre',
+                    date: 'date',
+                    time: 'time',
+                    venue: 'venue',
+                    description: 'description',
+                    entryType: 'entry_type'
+                };
+                if (mapping[key]) {
+                    eventData[mapping[key]] = value;
+                }
             }
         });
 
         eventData.image = imagePreview || editingEvent?.image || "/assets/DSC_0036.JPG";
 
         try {
-            const url = editingEvent ? `/api/events/${editingEvent._id}` : '/api/events';
-            const method = editingEvent ? 'PATCH' : 'POST';
-
-            const res = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(eventData)
-            });
-
-            if (res.ok) {
-                const updatedRes = await fetch("/api/events");
-                const updatedData = await updatedRes.json();
-                setEvents(updatedData.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()));
-                setShowEventModal(false);
-                setEditingEvent(null);
-                setImagePreview(null);
+            if (editingEvent) {
+                const { error } = await supabase
+                    .from('events')
+                    .update(eventData)
+                    .eq('id', editingEvent.id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('events')
+                    .insert([eventData]);
+                if (error) throw error;
             }
+
+            const { data: updatedData } = await supabase
+                .from('events')
+                .select('*')
+                .order('date', { ascending: true });
+
+            if (updatedData) setEvents(updatedData);
+            setShowEventModal(false);
+            setEditingEvent(null);
+            setImagePreview(null);
         } catch (err) {
             console.error("Failed to save event");
         }
@@ -111,9 +191,13 @@ export default function Account() {
     const handleDeleteEvent = async (id: string) => {
         if (!confirm("Sei sicuro di voler eliminare questo evento?")) return;
         try {
-            const res = await fetch(`/api/events/${id}`, { method: 'DELETE' });
-            if (res.ok) {
-                setEvents(events.filter(e => e._id !== id));
+            const { error } = await supabase
+                .from('events')
+                .delete()
+                .eq('id', id);
+
+            if (!error) {
+                setEvents(events.filter(e => e.id !== id));
                 if (selectedEventId === id) setSelectedEventId(null);
             }
         } catch (err) {
@@ -129,34 +213,37 @@ export default function Account() {
 
         if (isSignup) {
             try {
-                const res = await fetch("/api/auth/register", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: authName, email: authEmail, password: authPassword }),
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: authEmail,
+                    password: authPassword,
+                    options: {
+                        data: {
+                            full_name: authName,
+                        }
+                    }
                 });
 
-                if (res.ok) {
-                    // Auto login after signup
-                    await signIn("credentials", {
-                        email: authEmail,
-                        password: authPassword,
-                        redirect: false,
-                    });
-                } else {
-                    const data = await res.json();
-                    alert(data.error || "Errore durante la registrazione");
+                if (authError) throw authError;
+
+                if (authData.user) {
+                    // Create profile
+                    const { error: profileError } = await supabase
+                        .from('profiles')
+                        .insert([
+                            { id: authData.user.id, name: authName, role: 'user' }
+                        ]);
+                    if (profileError) console.error("Profile creation error:", profileError);
                 }
-            } catch (err) {
-                console.error("Signup failed");
+            } catch (err: any) {
+                alert(err.message || "Errore durante la registrazione");
             }
         } else {
-            const res = await signIn("credentials", {
+            const { error } = await supabase.auth.signInWithPassword({
                 email: authEmail,
                 password: authPassword,
-                redirect: false,
             });
-            if (res?.error) {
-                alert("Credenziali non valide");
+            if (error) {
+                alert("Credenziali non valide: " + error.message);
             }
         }
     };
@@ -257,12 +344,12 @@ export default function Account() {
                             </span>
                         </motion.div>
                         <h1 className="text-4xl md:text-7xl font-bold uppercase tracking-tighter leading-none italic">
-                            {role === "user" ? `Bentornato, ${session?.user?.name}` : "Management Hub"}
+                            {role === "user" ? `Bentornato, ${profile?.name || user?.email}` : "Management Hub"}
                         </h1>
                     </div>
 
                     <button
-                        onClick={() => signOut()}
+                        onClick={() => supabase.auth.signOut()}
                         className="flex items-center gap-2 group text-[10px] uppercase font-bold tracking-widest text-white/20 hover:text-white transition-colors border border-white/10 px-6 py-3"
                     >
                         <span>Fine Sessione</span>
@@ -292,9 +379,9 @@ export default function Account() {
                                 ) : events.length > 0 ? (
                                     events.map((event) => (
                                         <div
-                                            key={event._id}
-                                            onClick={() => setSelectedEventId(event._id)}
-                                            className={`p-8 border transition-all cursor-pointer group ${selectedEventId === event._id ? 'border-gold bg-gold/5' : 'border-white/5 bg-white/[0.01] hover:border-white/20'}`}
+                                            key={event.id}
+                                            onClick={() => setSelectedEventId(event.id)}
+                                            className={`p-8 border transition-all cursor-pointer group ${selectedEventId === event.id ? 'border-gold bg-gold/5' : 'border-white/5 bg-white/[0.01] hover:border-white/20'}`}
                                         >
                                             <div className="flex justify-between items-start">
                                                 <div>
@@ -320,7 +407,7 @@ export default function Account() {
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleDeleteEvent(event._id);
+                                                            handleDeleteEvent(event.id);
                                                         }}
                                                         className="p-3 border border-white/10 hover:border-red-500/50 text-white/40 hover:text-red-500 transition-all bg-white/5"
                                                     >

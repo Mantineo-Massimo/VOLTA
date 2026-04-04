@@ -5,23 +5,41 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Instagram, Facebook, LayoutGrid } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 const navLinks = [
     { name: "Home", href: "/" },
     { name: "Chi Siamo", href: "/about" },
     { name: "Eventi", href: "/events" },
     { name: "Galleria", href: "/gallery" },
-    { name: "Accedi", href: "/account" },
+    { name: "Account", href: "/account" },
 ];
 
 export default function Navbar() {
+    const supabase = createClient();
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
+
+        // Auth state listener
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            setIsLoggedIn(!!session);
+        };
+        checkAuth();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setIsLoggedIn(!!session);
+        });
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            subscription.unsubscribe();
+        };
     }, []);
 
     useEffect(() => {
@@ -69,7 +87,7 @@ export default function Navbar() {
 
                     <div className="flex items-center gap-4">
                         <Link href="/account" className="hidden sm:block text-[10px] uppercase font-bold tracking-widest border border-white/20 px-4 py-1.5 rounded-full hover:bg-white hover:text-black transition-all">
-                            Account
+                            {isLoggedIn ? "Account" : "Accedi"}
                         </Link>
                         <button
                             onClick={() => setIsOpen(true)}

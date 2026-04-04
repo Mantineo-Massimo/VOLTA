@@ -1,71 +1,14 @@
-"use client";
-
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Calendar, MapPin, Music, X, ArrowRight, Info, CheckCircle2, Lock, User, Clock } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import Link from "next/link";
 
-const activeEvents = [
-    {
-        id: 1,
-        title: "VŌLTA PREMIERE",
-        date: "Sabato, 4 Aprile",
-        time: "23:00 - 05:00",
-        location: "Messina",
-        venue: "Teatro Metropolitan",
-        dj: "CLARK",
-        image: "/assets/DSC_0036.JPG",
-        status: "Sold Out",
-        genre: "INDUSTRIAL / TECHNO",
-        dresscode: true,
-        entryType: "INVITE ONLY",
-        price: "Entry by Reservation",
-        desc: "Il lancio ufficiale della stagione. Un'esperienza immersiva di suoni e luci progettata per colpire i sensi.",
-        regLimit: 250,
-        regs: 250
-    },
-    {
-        id: 2,
-        title: "TECHNO CLASH",
-        date: "Venerdì, 10 Aprile",
-        time: "22:30 - Late",
-        location: "Taormina",
-        venue: "Secret Garden",
-        dj: "KØDE",
-        image: "/assets/DSC_0175.JPG",
-        status: "Low Availability",
-        genre: "PURE TECHNO / HARD",
-        dresscode: false,
-        entryType: "DOOR TAX",
-        price: "Member Exclusive",
-        desc: "Un viaggio sonoro nelle sonorità più industriali e pure del clubbing. Niente compromessi, solo ritmo.",
-        regLimit: 300,
-        regs: 245
-    },
-    {
-        id: 3,
-        title: "SUNSET VIBE",
-        date: "Domenica, 12 Aprile",
-        time: "18:00 - 00:00",
-        location: "Milazzo",
-        venue: "Beach Club",
-        dj: "MARK",
-        image: "/assets/DSC_0467.JPG",
-        status: "Upcoming",
-        genre: "DEEP HOUSE / AFRO",
-        dresscode: true,
-        entryType: "WEB LIST",
-        price: "Cocktail & Entry",
-        desc: "Il primo evento pomeridiano della stagione. Aperitivo tech-house e ritmi profondi fronte mare.",
-        regLimit: 150,
-        regs: 42
-    }
-];
-
 export default function Events() {
-    const { data: session, status } = useSession();
+    const supabase = createClient();
+    const [user, setUser] = useState<any>(null);
+    const [status, setStatus] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
     const [activeEvents, setActiveEvents] = useState<any[]>([]);
     const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
     const [isRegistered, setIsRegistered] = useState(false);
@@ -74,46 +17,91 @@ export default function Events() {
     const isLoggedIn = status === "authenticated";
 
     useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const res = await fetch("/api/events");
-                const data = await res.json();
-                setActiveEvents(data);
-            } catch (err) {
-                console.error("Failed to fetch events");
-            } finally {
-                setIsLoading(false);
+        const getSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                setUser(session.user);
+                setStatus("authenticated");
+            } else {
+                setStatus("unauthenticated");
             }
         };
+        getSession();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session) {
+                setUser(session.user);
+                setStatus("authenticated");
+            } else {
+                setUser(null);
+                setStatus("unauthenticated");
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const fetchEvents = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('events')
+                .select('*')
+                .order('date', { ascending: true });
+
+            if (data) setActiveEvents(data);
+            if (error) throw error;
+        } catch (err) {
+            console.error("Failed to fetch events");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchEvents();
     }, []);
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user) return;
+
         try {
-            const res = await fetch("/api/registrations", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ eventId: selectedEvent._id })
-            });
+            // 1. Insert registration
+            const { error: regError } = await supabase
+                .from('registrations')
+                .insert([
+                    { user_id: user.id, event_id: selectedEvent.id }
+                ]);
 
-            if (res.ok) {
-                setIsRegistered(true);
-                // Refresh event data to show updated regsCount
-                const updatedEventsRes = await fetch("/api/events");
-                const updatedEvents = await updatedEventsRes.json();
-                setActiveEvents(updatedEvents);
-
-                setTimeout(() => {
-                    setIsRegistered(false);
-                    setSelectedEvent(null);
-                }, 3000);
-            } else {
-                const data = await res.json();
-                alert(data.error || "Errore durante la registrazione");
+            if (regError) {
+                if (regError.code === '23505') {
+                    alert("Sei già registrato a questo evento.");
+                } else {
+                    throw regError;
+                }
+                return;
             }
-        } catch (err) {
-            console.error("Registration failed");
+
+            // 2. Increment regs_count in events table
+            // In a real app, this should be done via a Postgres Trigger or an RPC to be atomic.
+            // For now, I'll do a simple increment.
+            const { error: updateError } = await supabase
+                .from('events')
+                .update({ regs_count: (selectedEvent.regs_count || 0) + 1 })
+                .eq('id', selectedEvent.id);
+
+            if (updateError) throw updateError;
+
+            setIsRegistered(true);
+            await fetchEvents(); // Refresh data
+
+            setTimeout(() => {
+                setIsRegistered(false);
+                setSelectedEvent(null);
+            }, 3000);
+        } catch (err: any) {
+            console.error("Registration failed:", err);
+            alert("Errore durante la registrazione: " + (err.message || "Unknown error"));
         }
     };
 
@@ -150,13 +138,13 @@ export default function Events() {
                             <div key={i} className="aspect-[4/5] bg-white/5 animate-pulse rounded-3xl" />
                         ))
                     ) : activeEvents.map((event, i) => {
-                        const isFull = (event.regsCount || 0) >= event.regLimit;
-                        const statusLabel = event.isSoldOut || isFull ? "Sold Out" :
-                            (event.regsCount / event.regLimit > 0.8) ? "Low Availability" : "Upcoming";
+                        const isFull = (event.regs_count || 0) >= (event.reg_limit || 0);
+                        const statusLabel = event.is_sold_out || isFull ? "Sold Out" :
+                            ((event.regs_count || 0) / (event.reg_limit || 1) > 0.8) ? "Low Availability" : "Upcoming";
 
                         return (
                             <motion.div
-                                key={event._id}
+                                key={event.id}
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1 }}
@@ -189,7 +177,13 @@ export default function Events() {
                                             <span>{event.location}</span>
                                         </div>
                                         <h2 className="text-3xl font-bold uppercase tracking-tighter italic group-hover:text-gold transition-colors">{event.title}</h2>
-                                        <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">{event.genre}</p>
+                                        <div className="flex items-center gap-4">
+                                            <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">{event.genre}</p>
+                                            <div className="flex items-center gap-2 text-[9px] font-bold text-gold/60">
+                                                <User size={10} />
+                                                <span>{event.regs_count || 0} / {event.reg_limit || 0}</span>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-4 text-white/40 text-[10px] font-bold uppercase tracking-widest border-t border-white/5 pt-6 text-left">
@@ -262,7 +256,7 @@ export default function Events() {
                             <div className="flex-1 p-10 md:p-14 space-y-12 overflow-y-auto border-b md:border-b-0 md:border-r border-white/10 text-left">
                                 <div className="space-y-4">
                                     <span className="text-gold uppercase text-[10px] font-bold tracking-[0.5em] block">
-                                        {selectedEvent.isSoldOut ? "Sold Out" : "Limited Access"}
+                                        {selectedEvent.is_sold_out ? "Sold Out" : "Limited Access"}
                                     </span>
                                     <h3 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter leading-none italic">
                                         {selectedEvent.title}
@@ -296,12 +290,12 @@ export default function Events() {
                                         <div className="flex flex-col gap-2">
                                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                                                 <div
-                                                    className={`h-full transition-all duration-1000 ${selectedEvent.regsCount >= selectedEvent.regLimit ? 'bg-red-500' : 'bg-gold'}`}
-                                                    style={{ width: `${Math.min(100, ((selectedEvent.regsCount || 0) / selectedEvent.regLimit) * 100)}%` }}
+                                                    className={`h-full transition-all duration-1000 ${selectedEvent.regs_count >= (selectedEvent.reg_limit || 0) ? 'bg-red-500' : 'bg-gold'}`}
+                                                    style={{ width: `${Math.min(100, ((selectedEvent.regs_count || 0) / (selectedEvent.reg_limit || 1)) * 100)}%` }}
                                                 />
                                             </div>
                                             <p className="text-[9px] font-extrabold text-white/40 uppercase tracking-widest">
-                                                {selectedEvent.regsCount || 0} / {selectedEvent.regLimit} REGISTERED GUEST
+                                                {selectedEvent.regs_count || 0} / {selectedEvent.reg_limit} REGISTERED GUEST
                                             </p>
                                         </div>
                                     </div>
@@ -361,7 +355,7 @@ export default function Events() {
                                                     </div>
                                                     <div>
                                                         <h4 className="text-2xl font-bold uppercase tracking-tighter italic">One-Click Booking</h4>
-                                                        <p className="text-[10px] font-bold uppercase text-white/30 tracking-widest mt-2">{session?.user?.name}</p>
+                                                        <p className="text-[10px] font-bold uppercase text-white/30 tracking-widest mt-2">{user?.user_metadata?.full_name || user?.email}</p>
                                                     </div>
                                                 </div>
 
@@ -371,7 +365,7 @@ export default function Events() {
 
                                                 <button
                                                     onClick={handleRegister}
-                                                    disabled={selectedEvent.regsCount >= selectedEvent.regLimit}
+                                                    disabled={(selectedEvent.regs_count || 0) >= (selectedEvent.reg_limit || 0)}
                                                     className="w-full bg-gold text-black py-6 rounded-[2rem] font-extrabold uppercase text-xs tracking-[0.4em] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale"
                                                 >
                                                     RISERVA POSTO
