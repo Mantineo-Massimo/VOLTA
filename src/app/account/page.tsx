@@ -110,6 +110,31 @@ function AccountContent() {
     const role = profile?.role || null;
     const isLoggedIn = status === "authenticated";
 
+    const [userRegistrations, setUserRegistrations] = useState<any[]>([]);
+    const [isLoadingUserRegs, setIsLoadingUserRegs] = useState(false);
+
+    useEffect(() => {
+        if (isLoggedIn && role === "user") {
+            const fetchUserRegs = async () => {
+                setIsLoadingUserRegs(true);
+                try {
+                    const { data, error } = await supabase
+                        .from('registrations')
+                        .select('*, events(*)')
+                        .eq('user_id', user.id);
+
+                    if (data) setUserRegistrations(data);
+                    if (error) throw error;
+                } catch (err) {
+                    console.error("Failed to fetch user registrations");
+                } finally {
+                    setIsLoadingUserRegs(false);
+                }
+            };
+            fetchUserRegs();
+        }
+    }, [isLoggedIn, role, user?.id]);
+
     useEffect(() => {
         if (selectedEventId && (role === "admin" || role === "venue")) {
             const fetchRegs = async () => {
@@ -117,14 +142,13 @@ function AccountContent() {
                 try {
                     const { data, error } = await supabase
                         .from('registrations')
-                        .select('*, profiles(full_name, email)') // Note: joined with profiles
+                        .select('*, profiles(full_name, email, first_name, last_name)')
                         .eq('event_id', selectedEventId);
 
                     if (data) {
-                        // Map the joined profile data to match existing UI structure
                         const mappedData = data.map((reg: any) => ({
                             ...reg,
-                            userId: reg.profiles // This matches the userId.full_name access in UI
+                            userId: reg.profiles
                         }));
                         setRegistrations(mappedData);
                     }
@@ -620,15 +644,141 @@ function AccountContent() {
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                        <div className="lg:col-span-12 py-20 text-center border border-white/5 bg-white/[0.01]">
-                            <Shield size={64} className="mx-auto mb-8 text-gold/20" />
-                            <h2 className="text-3xl font-bold uppercase tracking-tighter mb-4 italic">Sezione Membro Attivata</h2>
-                            <p className="text-xs text-white/40 uppercase tracking-widest max-w-lg mx-auto leading-relaxed">
-                                Benvenuto nell'area privata VŌLTA. Le tue prenotazioni e lo storico degli eventi verranno visualizzati qui a breve.
-                                Il sistema è in fase di sincronizzazione con il nuovo database globale.
-                            </p>
-                            <button onClick={() => router.push('/events')} className="mt-10 bg-white text-black px-10 py-4 font-bold uppercase text-[10px] tracking-widest hover:bg-gold transition-all italic">SFOGLIA EVENTI LIVE</button>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* LEFT COL: Digital Member Card & Profile */}
+                        <div className="lg:col-span-4 space-y-8">
+                            {/* Member Card */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="relative aspect-[1.6/1] bg-gradient-to-br from-white/10 to-transparent border border-white/20 p-8 overflow-hidden group backdrop-blur-3xl"
+                            >
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <QrCode size={100} strokeWidth={1} />
+                                </div>
+                                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-gold/10 blur-[50px] rounded-full" />
+
+                                <div className="relative h-full flex flex-col justify-between">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">VŌLTA MEMBER ID</div>
+                                        <ShieldCheck size={20} className="text-gold" />
+                                    </div>
+
+                                    <div>
+                                        <h2 className="text-2xl font-black italic tracking-tighter uppercase mb-2">
+                                            {profile?.first_name || profile?.full_name?.split(' ')[0]} {profile?.last_name || profile?.full_name?.split(' ')[1]}
+                                        </h2>
+                                        <p className="text-[9px] font-mono tracking-widest text-gold/80 uppercase">
+                                            VOLTA-{profile?.id?.substring(0, 8).toUpperCase()}-2026
+                                        </p>
+                                    </div>
+
+                                    <div className="flex justify-between items-end">
+                                        <div className="text-[8px] uppercase tracking-[0.2em] text-white/30 font-bold">
+                                            STATUS: <span className="text-white">ACTIVE MEMBER</span>
+                                        </div>
+                                        <div className="text-[10px] font-black italic tracking-widest">
+                                            PLATFORM <span className="text-gold">ACCESS</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            {/* Profile Details Card */}
+                            <div className="bg-white/[0.02] border border-white/5 p-8 backdrop-blur-xl group hover:border-white/10 transition-colors">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-6 flex items-center gap-2">
+                                    <User size={12} className="text-gold" /> DATI ACCOUNT
+                                </h3>
+                                <div className="space-y-6">
+                                    <div>
+                                        <p className="text-[8px] uppercase tracking-widest text-white/20 mb-1">Email Registrata</p>
+                                        <p className="text-xs font-bold uppercase tracking-widest border-b border-white/5 pb-2 truncate">{profile?.email}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[8px] uppercase tracking-widest text-white/20 mb-1">Recapito Telefonico</p>
+                                        <p className="text-xs font-bold uppercase tracking-widest border-b border-white/5 pb-2 text-white/60">
+                                            {profile?.phone || "DATO NON DISPONIBILE"}
+                                        </p>
+                                    </div>
+                                    <div className="pt-2">
+                                        <p className="text-[8px] uppercase tracking-widest text-white/20 mb-2">Membership</p>
+                                        <div className="flex items-center gap-2">
+                                            <div className="px-3 py-1 bg-gold text-black text-[8px] font-black uppercase tracking-widest">TIER 01 / BASE</div>
+                                            <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">Feb 2026</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* RIGHT COL: Personal Registrations / Activity */}
+                        <div className="lg:col-span-8 flex flex-col gap-8">
+                            <div className="bg-white/[0.01] border border-white/10 p-10 backdrop-blur-2xl relative overflow-hidden flex-grow group hover:border-white/20 transition-colors">
+                                <div className="absolute top-0 right-0 p-10 opacity-[0.02] pointer-events-none group-hover:opacity-[0.05] transition-opacity">
+                                    <Activity size={200} />
+                                </div>
+                                <div className="flex justify-between items-end mb-12 relative z-10">
+                                    <div>
+                                        <h2 className="text-4xl font-black italic tracking-tighter uppercase leading-none">I Miei <span className="text-gold">Eventi.</span></h2>
+                                        <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20 mt-3">Storico Partecipazioni e Ticket Attivi</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-3xl font-black tracking-tighter italic leading-none">{userRegistrations.length}</p>
+                                        <p className="text-[8px] uppercase font-bold tracking-widest text-gold/60 mt-1">Prenotazioni</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 relative z-10">
+                                    {isLoadingUserRegs ? (
+                                        <div className="animate-pulse space-y-4">
+                                            {[1, 2].map(i => (
+                                                <div key={i} className="h-24 bg-white/5 border border-white/5 rounded-none" />
+                                            ))}
+                                        </div>
+                                    ) : userRegistrations.length > 0 ? (
+                                        userRegistrations.map((reg) => (
+                                            <div
+                                                key={reg.id}
+                                                className="group/item flex flex-col md:flex-row md:items-center justify-between p-6 bg-black/40 border border-white/10 hover:border-gold/40 hover:bg-gold/[0.02] transition-all cursor-default"
+                                            >
+                                                <div className="flex items-center gap-6">
+                                                    <div className="w-12 h-12 bg-gold/10 flex flex-col items-center justify-center border border-gold/20 group-hover/item:bg-gold/20 transition-colors">
+                                                        <Calendar size={18} className="text-gold" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-sm font-black uppercase tracking-widest group-hover/item:text-gold transition-colors">
+                                                            {reg.events?.title || "Evento Speciale"}
+                                                        </h4>
+                                                        <p className="text-[9px] uppercase tracking-widest text-white/40 mt-1 flex items-center gap-2">
+                                                            <MapPin size={10} /> {reg.events?.venue || "TBA"} • {reg.events?.date || reg.events?.created_at?.split('T')[0]}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-4 md:mt-0 flex items-center gap-6 border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
+                                                    <div className="text-right hidden md:block">
+                                                        <p className="text-[8px] uppercase font-bold tracking-widest text-white/20">Status</p>
+                                                        <p className="text-[10px] font-black uppercase text-green-500 tracking-widest italic flex items-center gap-2">
+                                                            <CheckCircle2 size={10} /> Confermato
+                                                        </p>
+                                                    </div>
+                                                    <Ticket size={24} className="text-white/10 group-hover/item:text-gold transition-colors" />
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-24 border border-dotted border-white/10 opacity-20 text-center group-hover:opacity-40 transition-opacity">
+                                            <Search size={40} className="mb-4 text-gold" />
+                                            <p className="text-[10px] uppercase font-bold tracking-[0.2em] mb-4">Ancora nessuna prenotazione attiva.</p>
+                                            <button
+                                                onClick={() => router.push('/events')}
+                                                className="bg-white text-black px-6 py-3 text-[9px] font-black uppercase tracking-[0.3em] hover:bg-gold transition-colors"
+                                            >
+                                                Sfoglia Eventi
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
