@@ -278,34 +278,49 @@ function AccountContent() {
         e.preventDefault();
         const formData = new FormData(e.target as HTMLFormElement);
         const eventData: any = {
-            dresscode: false,
-            is_sold_out: false // Using snake_case for Supabase usually, but I'll stick to what I planned in SQL
+            // Defaults
+            sold_out_type: 'NONE',
+            is_sold_out: false
         };
+
         formData.forEach((value, key) => {
-            if (key === 'dresscode' || key === 'isSoldOut') {
-                eventData[key === 'isSoldOut' ? 'is_sold_out' : key] = value === 'on';
+            if (key === 'isSoldOut') {
+                eventData.is_sold_out = value === 'on';
             } else if (key === 'regLimit') {
                 eventData.reg_limit = parseInt(value as string) || 0;
             } else if (key === 'imageFile') {
                 // skip
             } else {
-                // Map camelCase to snake_case for SQL if needed, but I'll use the SQL names
+                // Standard mapping
                 const mapping: Record<string, string> = {
                     title: 'title',
                     location: 'location',
                     dj: 'dj',
                     genre: 'genre',
-                    date: 'date',
-                    time: 'time',
                     venue: 'venue',
                     description: 'description',
-                    entryType: 'entry_type'
+                    entryType: 'entry_type',
+                    dresscode: 'dresscode',
+                    soldOutType: 'sold_out_type',
+                    eventDate: 'event_date',
+                    startTime: 'start_time'
                 };
                 if (mapping[key]) {
                     eventData[mapping[key]] = value;
                 }
             }
         });
+
+        // Compute legacy strings for existing UI if data isn't migrated
+        // (Native date for display usually needs formatting)
+        if (eventData.event_date) {
+            const d = new Date(eventData.event_date);
+            const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+            eventData.date = d.toLocaleDateString('it-IT', options);
+        }
+        if (eventData.start_time) {
+            eventData.time = `${eventData.start_time} - 05:00`; // Default end time
+        }
 
         eventData.image = imagePreview || editingEvent?.image || "/assets/DSC_0036.JPG";
 
@@ -1083,12 +1098,12 @@ function AccountContent() {
                                                 <input required name="genre" defaultValue={editingEvent?.genre} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Full Date String</label>
-                                                <input required name="date" placeholder="Sabato, 4 Aprile" defaultValue={editingEvent?.date} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
+                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Select Event Date</label>
+                                                <input required type="date" name="eventDate" defaultValue={editingEvent?.event_date} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Schedule (Time)</label>
-                                                <input required name="time" placeholder="23:00 - 05:00" defaultValue={editingEvent?.time} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
+                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Opening Time</label>
+                                                <input required type="time" name="startTime" defaultValue={editingEvent?.start_time} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Venue Partner</label>
@@ -1102,18 +1117,26 @@ function AccountContent() {
                                     </div>
 
                                     <div className="space-y-8">
-                                        <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold/60 italic border-b border-white/5 pb-4">Operational Flags</h3>
-                                        <div className="grid grid-cols-2 gap-8">
-                                            <label className="flex items-center gap-4 cursor-pointer group">
-                                                <input type="checkbox" name="dresscode" defaultChecked={editingEvent?.dresscode} className="hidden peer" />
-                                                <div className="w-6 h-6 border border-white/20 peer-checked:bg-gold peer-checked:border-gold transition-all" />
-                                                <span className="text-[9px] font-bold uppercase tracking-widest group-hover:text-gold transition-colors italic">Mandatory Dresscode</span>
-                                            </label>
-                                            <label className="flex items-center gap-4 cursor-pointer group">
-                                                <input type="checkbox" name="isSoldOut" defaultChecked={editingEvent?.isSoldOut} className="hidden peer" />
-                                                <div className="w-6 h-6 border border-white/20 peer-checked:bg-red-500 peer-checked:border-red-500 transition-all" />
-                                                <span className="text-[9px] font-bold uppercase tracking-widest group-hover:text-red-500 transition-colors italic">Hard Kill (Sold Out)</span>
-                                            </label>
+                                        <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold/60 italic border-b border-white/5 pb-4">Operational Flags & Dresscode</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1 text-left block">Dresscode (Leave empty if none)</label>
+                                                <input name="dresscode" defaultValue={editingEvent?.dresscode} placeholder="E.G. TOTAL BLACK / ELEGANTE" className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1 text-left block">Availability Status</label>
+                                                <select name="soldOutType" defaultValue={editingEvent?.sold_out_type || 'NONE'} className="w-full bg-black border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all appearance-none cursor-pointer">
+                                                    <option value="NONE">OPEN (DISPONIBILE)</option>
+                                                    <option value="TAVOLI">SOLD OUT TAVOLI</option>
+                                                    <option value="LISTA">SOLD OUT LISTA</option>
+                                                    <option value="COMPLETO">SOLD OUT COMPLETO</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        {/* Master Kill switch for backward compatibility */}
+                                        <div className="hidden">
+                                            <input type="checkbox" name="isSoldOut" checked={editingEvent?.is_sold_out} readOnly />
                                         </div>
 
                                         <div className="space-y-2">

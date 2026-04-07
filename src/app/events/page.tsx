@@ -142,8 +142,20 @@ export default function Events() {
                     ) : activeEvents.length > 0 ? (
                         activeEvents.map((event, i) => {
                             const isFull = (event.regs_count || 0) >= (event.reg_limit || 0);
-                            const statusLabel = event.is_sold_out || isFull ? "Sold Out" :
-                                ((event.regs_count || 0) / (event.reg_limit || 1) > 0.8) ? "Low Availability" : "Upcoming";
+
+                            let statusLabel = "Upcoming";
+                            let statusColor = "bg-gold text-black";
+
+                            if (event.sold_out_type && event.sold_out_type !== 'NONE') {
+                                statusLabel = `SOLD OUT ${event.sold_out_type}`;
+                                statusColor = "bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]";
+                            } else if (event.is_sold_out || isFull) {
+                                statusLabel = "Sold Out";
+                                statusColor = "bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]";
+                            } else if (((event.regs_count || 0) / (event.reg_limit || 1) > 0.8)) {
+                                statusLabel = "Low Availability";
+                                statusColor = "bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.3)]";
+                            }
 
                             return (
                                 <motion.div
@@ -165,7 +177,7 @@ export default function Events() {
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
                                         <div className="absolute top-4 left-4">
-                                            <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full shadow-xl ${statusLabel === 'Sold Out' ? 'bg-red-500 text-white' : 'bg-gold text-black'}`}>
+                                            <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${statusColor}`}>
                                                 {statusLabel}
                                             </span>
                                         </div>
@@ -206,7 +218,7 @@ export default function Events() {
                                                     <span>{event.dj}</span>
                                                 </div>
                                                 <div className="flex items-center gap-3">
-                                                    {event.dresscode && <span className="border border-white/10 px-2 py-0.5 text-[8px]">DRESSCODE</span>}
+                                                    {event.dresscode && <span className="border border-gold/30 px-2 py-0.5 text-[8px] text-gold font-bold">{event.dresscode.toUpperCase()}</span>}
                                                 </div>
                                             </div>
                                         </div>
@@ -225,7 +237,7 @@ export default function Events() {
                             </div>
                             <div className="space-y-2">
                                 <h3 className="text-2xl font-bold uppercase tracking-tighter italic">Nessun Evento Programmato.</h3>
-                                <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-white/20">Stiamo preparando la prossima grande sVŌLTA.</p>
+                                <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-white/20">Stiamo preparando la prossima sVŌLTA.</p>
                             </div>
                         </div>
                     )}
@@ -291,7 +303,7 @@ export default function Events() {
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Dress Code</p>
-                                        <p className="text-sm font-bold uppercase text-white">{selectedEvent.dresscode ? "REQUIRED" : "NOT REQUIRED"}</p>
+                                        <p className="text-sm font-bold uppercase text-white">{selectedEvent.dresscode || "NESSUNO"}</p>
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Entry Access</p>
@@ -377,12 +389,20 @@ export default function Events() {
                                                     Con la registrazione il tuo nominativo verrà inserito automaticamente nella guest list ufficiale di VŌLTA. Riceverai una conferma digitale via email.
                                                 </div>
 
+                                                {((selectedEvent.sold_out_type === 'LISTA' || selectedEvent.sold_out_type === 'COMPLETO') || (selectedEvent.regs_count || 0) >= (selectedEvent.reg_limit || 0)) && (
+                                                    <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-4 italic">
+                                                        {selectedEvent.sold_out_type === 'LISTA' ? "LISTA CHIUSA (SOLD OUT)" :
+                                                            selectedEvent.sold_out_type === 'COMPLETO' ? "EVENTO COMPLETO (SOLD OUT)" :
+                                                                "LIMITE PRENOTAZIONI RAGGIUNTO"}
+                                                    </p>
+                                                )}
+
                                                 <button
                                                     onClick={handleRegister}
-                                                    disabled={(selectedEvent.regs_count || 0) >= (selectedEvent.reg_limit || 0)}
+                                                    disabled={(selectedEvent.regs_count || 0) >= (selectedEvent.reg_limit || 0) || selectedEvent.sold_out_type === 'LISTA' || selectedEvent.sold_out_type === 'COMPLETO'}
                                                     className="w-full bg-gold text-black py-6 rounded-[2rem] font-extrabold uppercase text-xs tracking-[0.4em] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale"
                                                 >
-                                                    RISERVA POSTO
+                                                    {selectedEvent.sold_out_type === 'TAVOLI' ? "RISERVA (LISTA SOLA)" : "RISERVA POSTO"}
                                                 </button>
 
                                                 <p className="text-[8px] uppercase font-bold text-white/20 tracking-[0.5em]">System Verified</p>
