@@ -39,7 +39,7 @@ function AccountContent() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 setUser(session.user);
-                // Fetch profile for role
+                // Fetch profile for role and verification status
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('*')
@@ -70,8 +70,19 @@ function AccountContent() {
             }
         });
 
+        // Handle URL parameters for messages
+        const msg = searchParams.get("message");
+        const err = searchParams.get("error");
+        if (msg === "verified_success") {
+            setAuthMessage({ type: 'success', text: "ACCOUNT ATTIVATO CON SUCCESSO! ORA PUOI ACCEDERE." });
+        } else if (msg === "already_verified") {
+            setAuthMessage({ type: 'success', text: "ACCOUNT GIÀ VERIFICATO. ACCEDI PURE." });
+        } else if (err === "invalid_token") {
+            setAuthMessage({ type: 'error', text: "TOKEN DI VERIFICA NON VALIDO O SCADUTO." });
+        }
+
         return () => subscription.unsubscribe();
-    }, []);
+    }, [searchParams]);
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -214,43 +225,42 @@ function AccountContent() {
 
         if (isSignup) {
             try {
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: authEmail,
-                    password: authPassword,
-                    options: {
-                        data: {
-                            full_name: authName,
-                        }
-                    }
+                setAuthMessage({ type: 'success', text: "CREAZIONE ACCOUNT IN CORSO..." });
+
+                const response = await fetch("/api/auth/signup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: authEmail,
+                        password: authPassword,
+                        full_name: authName
+                    })
                 });
 
-                if (authError) throw authError;
+                const data = await response.json();
 
-                if (authData.user) {
-                    // Create profile
-                    const { error: profileError } = await supabase
-                        .from('profiles')
-                        .insert([
-                            { id: authData.user.id, full_name: authName, email: authEmail, role: 'user' }
-                        ]);
-                    if (profileError) console.error("Profile creation error:", profileError);
+                if (!response.ok) throw new Error(data.error || "Errore durante la registrazione");
 
-                    if (authData.session) {
-                        setAuthMessage({
-                            type: 'success',
-                            text: "REGISTRAZIONE COMPLETATA. ACCESSO IN CORSO..."
-                        });
-                        // Clear fields
-                        setAuthEmail("");
-                        setAuthPassword("");
-                        setAuthName("");
-                    } else {
-                        setAuthMessage({
-                            type: 'success',
-                            text: "MEMBERSHIP CREATA. CONTROLLA LA TUA EMAIL PER ATTIVARE IL PROFILO."
-                        });
-                    }
-                }
+                setAuthMessage({
+                    type: 'success',
+                    text: "MEMBERSHIP CREATA. BENVENUTO NEL CLUB. CONTROLLA LA TUA EMAIL."
+                });
+
+                // Clear fields
+                setAuthEmail("");
+                setAuthPassword("");
+                setAuthName("");
+
+                // Automatic login after signup if session is available
+                // In our API case, we might need a manual login or wait for the auth state to change
+                // But usually, Supabase Auth state will catch up if the user was signed up.
+                // However, since we are using a server-side route, we might want to trigger a sign-in here or let the user login manually.
+                // For better UX, we'll suggest logging in now.
+                setIsSignup(false);
+                setAuthMessage({
+                    type: 'success',
+                    text: "MEMBERSHIP CREATA. ORA PUOI ACCEDERE CON LE TUE CREDENZIALI."
+                });
             } catch (err: any) {
                 setAuthMessage({ type: 'error', text: err.message?.toUpperCase() || "ERRORE DURANTE LA REGISTRAZIONE" });
             }
@@ -264,6 +274,49 @@ function AccountContent() {
             }
         }
     };
+
+    if (isLoggedIn && profile && profile.is_verified === false) {
+        return (
+            <div className="min-h-screen bg-black pt-32 pb-24 px-6 flex flex-col items-center justify-center relative font-sans text-white text-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gold/5 blur-[120px] rounded-full pointer-events-none" />
+
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="max-w-md w-full bg-white/5 p-12 border border-gold/30 backdrop-blur-xl relative z-10"
+                >
+                    <div className="w-20 h-20 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-gold/20">
+                        <ShieldCheck className="w-10 h-10 text-gold" />
+                    </div>
+
+                    <h1 className="text-4xl font-black italic tracking-tighter uppercase mb-6 leading-none">
+                        VERIFICA <span className="text-gold">RICHIESTA.</span>
+                    </h1>
+
+                    <p className="text-xs uppercase tracking-[0.2em] text-white/60 mb-10 leading-relaxed">
+                        IL TUO ACCOUNT È STATO CREATO MA DEVE ESSERE ATTIVATO.
+                        CONTROLLA LA TUA EMAIL (<span className="text-white">{profile.email}</span>) E CLICCA SUL LINK DI CONFERMA PER ACCEDERE AL PORTALE VŌLTA.
+                    </p>
+
+                    <div className="space-y-4">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="w-full bg-white text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-gold transition-colors"
+                        >
+                            HO GIÀ CONFERMATO
+                        </button>
+
+                        <button
+                            onClick={() => supabase.auth.signOut()}
+                            className="w-full bg-transparent border border-white/20 text-white/40 py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:text-white hover:border-white transition-all"
+                        >
+                            ESCI / CAMBIA ACCOUNT
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
 
     if (!isLoggedIn) {
         return (
