@@ -26,6 +26,7 @@ function AccountContent() {
     const [activeTab, setActiveTab] = useState<"home" | "events" | "bookings" | "users" | "settings">("events");
     const [creationStage, setCreationStage] = useState(1);
     const [eventFormData, setEventFormData] = useState<any>({});
+    const [lastStageChangeTime, setLastStageChangeTime] = useState(0);
     const [registrations, setRegistrations] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingRegs, setIsLoadingRegs] = useState(false);
@@ -297,8 +298,12 @@ function AccountContent() {
         if (creationStage < 3) {
             captureStageData();
             setCreationStage(s => s + 1);
+            setLastStageChangeTime(Date.now());
             return;
         }
+
+        // RACE CONDITION LOCK: Block if stage just changed (prevents double-click submit)
+        if (Date.now() - lastStageChangeTime < 500) return;
 
         setAuthMessage(null);
 
@@ -1454,7 +1459,11 @@ function AccountContent() {
                                             {creationStage < 3 ? (
                                                 <button
                                                     type="button"
-                                                    onClick={() => { captureStageData(); setCreationStage(s => s + 1); }}
+                                                    onClick={() => {
+                                                        captureStageData();
+                                                        setCreationStage(s => s + 1);
+                                                        setLastStageChangeTime(Date.now());
+                                                    }}
                                                     className="flex-grow bg-white text-black px-10 py-5 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-gold transition-all italic flex items-center justify-between"
                                                 >
                                                     Procedere al prossimo stadio
