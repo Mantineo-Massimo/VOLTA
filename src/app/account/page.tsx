@@ -332,54 +332,47 @@ function AccountContent() {
 
         setIsAuthLoading(true);
         try {
-            let eventData: any = {};
+            // Recompose data explicitly to match Supabase schema
+            const eventData: any = {
+                title: mergedData.title,
+                location: mergedData.location,
+                dj: mergedData.dj,
+                genre: mergedData.genre,
+                description: mergedData.description,
+                entryType: mergedData.entryType,
+                dresscode: mergedData.dresscode,
+                sold_out_type: mergedData.soldOutType,
+                reg_limit: parseInt(mergedData.regLimit as string) || 0,
+            };
 
-            // Map mergedData to eventData
-            for (const [key, value] of Object.entries(mergedData)) {
-                if (key === 'imageFile' && value instanceof File && value.size > 0) {
-                    const uploadFormData = new FormData();
-                    uploadFormData.append('file', value);
-                    uploadFormData.append('upload_preset', 'volta_preset');
-
-                    const res = await fetch('https://api.cloudinary.com/v1_1/dmod7mzvf/image/upload', {
-                        method: 'POST',
-                        body: uploadFormData
-                    });
-                    const data = await res.json();
-                    if (data.secure_url) eventData.image = data.secure_url;
-                }
-
-                const mapping: Record<string, string> = {
-                    title: 'title',
-                    location: 'location',
-                    dj: 'dj',
-                    genre: 'genre',
-                    description: 'description',
-                    entryType: 'entryType',
-                    dresscode: 'dresscode',
-                    soldOutType: 'sold_out_type',
-                    eventDate: 'date',
-                    startTime: 'time',
-                    regLimit: 'reg_limit'
-                };
-                if (mapping[key]) {
-                    eventData[mapping[key]] = value;
-                }
-            }
-
-            if (eventData.event_date) {
-                const d = new Date(eventData.event_date);
+            // Handle Date
+            if (mergedData.eventDate) {
+                const d = new Date(mergedData.eventDate);
                 const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
                 const formattedDate = d.toLocaleDateString('it-IT', options);
                 eventData.date = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
             }
-            if (eventData.start_time) {
-                const start = eventData.start_time;
-                const end = eventData.end_time || "05:00";
-                eventData.time = `${start} - ${end}`;
-            }
 
-            eventData.image = eventData.image || imagePreview || editingEvent?.image || "/assets/DSC_0036.JPG";
+            // Handle Time
+            const start = mergedData.startTime || "23:00";
+            const end = mergedData.endTime || "05:00";
+            eventData.time = `${start} - ${end}`;
+
+            // Handle Image
+            if (mergedData.imageFile instanceof File && mergedData.imageFile.size > 0) {
+                const uploadFormData = new FormData();
+                uploadFormData.append('file', mergedData.imageFile);
+                uploadFormData.append('upload_preset', 'volta_preset');
+
+                const res = await fetch('https://api.cloudinary.com/v1_1/dmod7mzvf/image/upload', {
+                    method: 'POST',
+                    body: uploadFormData
+                });
+                const data = await res.json();
+                if (data.secure_url) eventData.image = data.secure_url;
+            } else {
+                eventData.image = eventData.image || imagePreview || editingEvent?.image || "/assets/DSC_0036.JPG";
+            }
 
             if (editingEvent) {
                 const { error } = await supabase
