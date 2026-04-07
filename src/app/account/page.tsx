@@ -22,6 +22,7 @@ function AccountContent() {
     const [status, setStatus] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
 
     const [events, setEvents] = useState<any[]>([]);
+    const [activeTab, setActiveTab] = useState<"home" | "events" | "bookings" | "users" | "settings">("events");
     const [registrations, setRegistrations] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingRegs, setIsLoadingRegs] = useState(false);
@@ -451,16 +452,10 @@ function AccountContent() {
                     text: "MEMBERSHIP CREATA. BENVENUTO NEL CLUB. CONTROLLA LA TUA EMAIL."
                 });
 
-                // Clear fields (keep email/password for easy login)
                 setAuthFirstName("");
                 setAuthLastName("");
                 setAuthPhone("");
 
-                // Automatic login after signup if session is available
-                // In our API case, we might need a manual login or wait for the auth state to change
-                // But usually, Supabase Auth state will catch up if the user was signed up.
-                // However, since we are using a server-side route, we might want to trigger a sign-in here or let the user login manually.
-                // For better UX, we'll suggest logging in now.
                 setIsSignup(false);
                 setAuthMessage({
                     type: 'success',
@@ -482,6 +477,291 @@ function AccountContent() {
             setIsAuthLoading(false);
         }
     };
+
+    // --- SIDEBAR RENDERER ---
+
+    const renderSidebar = () => {
+        const menuItems = [
+            { id: 'home' as const, label: 'HOME', icon: LayoutDashboard },
+            { id: 'events' as const, label: 'EVENTI', icon: Calendar },
+            { id: 'bookings' as const, label: 'PRENOTAZIONI', icon: Ticket },
+            { id: 'users' as const, label: 'UTENTI', icon: Users },
+            { id: 'settings' as const, label: 'IMPOSTAZIONI', icon: Settings },
+        ];
+
+        return (
+            <div className="flex flex-col gap-3">
+                <div className="mb-6 px-2">
+                    <p className="text-[8px] font-black uppercase tracking-[0.5em] text-white/20 italic">Command Center</p>
+                </div>
+                {menuItems.map((item) => (
+                    <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id)}
+                        className={`flex items-center gap-4 px-6 py-5 text-[10px] font-black uppercase tracking-[0.3em] transition-all border backdrop-blur-xl ${activeTab === item.id
+                            ? 'bg-gold text-black border-gold shadow-[0_20px_50px_rgba(255,184,0,0.15)] translate-x-2'
+                            : 'bg-white/[0.02] text-white/30 border-white/5 hover:border-white/20 hover:text-white hover:translate-x-1'
+                            }`}
+                    >
+                        <item.icon size={16} />
+                        <span className="italic">{item.label}</span>
+                    </button>
+                ))}
+
+                <button
+                    onClick={() => supabase.auth.signOut()}
+                    className="mt-12 flex items-center gap-4 px-6 py-5 text-[10px] font-black uppercase tracking-[0.3em] transition-all border border-white/5 text-white/20 hover:text-red-500 hover:border-red-500/30 bg-white/[0.01]"
+                >
+                    <LogOut size={16} />
+                    <span className="italic">Fine Sessione</span>
+                </button>
+            </div>
+        );
+    };
+
+    const renderHome = () => (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                {[
+                    { label: "Active Events", value: events.length, icon: Calendar },
+                    { label: "Total Bookings", value: "2.4K", icon: Ticket },
+                    { label: "VŌLTA Members", value: "850", icon: Users },
+                    { label: "Live Traffic", value: "12", icon: Activity },
+                ].map((stat, i) => (
+                    <div key={i} className="p-8 border border-white/10 bg-white/[0.02] backdrop-blur-xl group hover:border-gold/30 transition-all">
+                        <p className="text-[9px] font-black uppercase tracking-[0.4em] text-white/30 mb-4 flex items-center gap-2">
+                            <stat.icon size={12} className="text-gold/50" /> {stat.label}
+                        </p>
+                        <h4 className="text-5xl font-black italic tracking-tighter text-white group-hover:text-gold transition-colors">{stat.value}</h4>
+                    </div>
+                ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="p-10 border border-white/10 bg-white/[0.01] min-h-[400px]">
+                    <h3 className="text-xl font-bold uppercase tracking-tighter flex items-center gap-4 mb-10">
+                        <Activity className="text-gold" size={20} />
+                        Platform Activity
+                    </h3>
+                    <div className="space-y-6 opacity-30">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="flex items-center gap-6 border-b border-white/5 pb-6">
+                                <div className="w-2 h-2 bg-gold rounded-full" />
+                                <div className="flex-grow h-4 bg-white/5" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="p-10 border border-white/10 bg-white/[0.01]">
+                    <h3 className="text-xl font-bold uppercase tracking-tighter flex items-center gap-4 mb-10">
+                        <LogOut className="text-gold" size={20} />
+                        Quick Access
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        <button onClick={() => setActiveTab('events')} className="p-6 border border-white/5 hover:border-gold/50 transition-all text-[10px] font-bold uppercase tracking-widest text-left">Deploy New Event</button>
+                        <button onClick={() => setActiveTab('bookings')} className="p-6 border border-white/5 hover:border-gold/50 transition-all text-[10px] font-bold uppercase tracking-widest text-left">Audit Registrations</button>
+                        <button onClick={() => setActiveTab('users')} className="p-6 border border-white/5 hover:border-gold/50 transition-all text-[10px] font-bold uppercase tracking-widest text-left">Manage Staff</button>
+                        <button onClick={() => setActiveTab('settings')} className="p-6 border border-white/5 hover:border-gold/50 transition-all text-[10px] font-bold uppercase tracking-widest text-left">System Config</button>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
+
+    const renderEvents = () => (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div className="lg:col-span-7 flex flex-col gap-10">
+                <div className="flex justify-between items-center bg-white/[0.02] p-8 border border-white/5 backdrop-blur-sm">
+                    <h2 className="text-2xl font-bold uppercase tracking-tighter flex items-center gap-4">
+                        <Activity className="text-gold" size={24} />
+                        Eventi Globali
+                    </h2>
+                    <button
+                        onClick={() => { setEditingEvent(null); setShowEventModal(true); setImagePreview(null); }}
+                        className="bg-gold text-black text-[10px] font-bold uppercase px-8 py-3 tracking-widest hover:invert transition-all transform active:scale-95"
+                    >
+                        CREA EVENTO
+                    </button>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                    {isLoading ? (
+                        <div className="p-8 border border-white/5 bg-white/[0.01] animate-pulse h-32" />
+                    ) : events.length > 0 ? (
+                        events.map((event) => (
+                            <div
+                                key={event.id}
+                                onClick={() => setSelectedEventId(event.id)}
+                                className={`p-8 border transition-all cursor-pointer group ${selectedEventId === event.id ? 'border-gold bg-gold/5' : 'border-white/5 bg-white/[0.01] hover:border-white/20'}`}
+                            >
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gold mb-2">{event.date} • {event.location}</p>
+                                        <h3 className="text-2xl font-bold uppercase tracking-tighter">{event.title}</h3>
+                                        <div className="flex items-center gap-4 mt-4">
+                                            <p className="text-[10px] uppercase tracking-widest text-white/40 flex items-center gap-2">
+                                                <Users size={12} className="text-gold/40" />
+                                                {event.regsCount || 0} / {event.regLimit} Booking
+                                            </p>
+                                            {event.sold_out_type !== 'NONE' && (
+                                                <span className="text-[8px] font-bold px-2 py-0.5 border border-red-500/50 text-red-500 uppercase">
+                                                    SOLD OUT {event.sold_out_type}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setEditingEvent(event); setShowEventModal(true); }}
+                                            className="p-3 border border-white/10 hover:border-white/40 text-white/40 hover:text-white transition-all bg-white/5"
+                                        >
+                                            <Edit size={16} />
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteEvent(event.id);
+                                            }}
+                                            className="p-3 border border-white/10 hover:border-red-500/50 text-white/40 hover:text-red-500 transition-all bg-white/5"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="p-20 border border-dotted border-white/10 text-center opacity-20">
+                            <p className="text-xs uppercase tracking-widest">Nessun evento presente nel database.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="lg:col-span-5 border border-white/10 bg-white/[0.01] flex flex-col p-8 md:p-10 min-h-[600px] relative overflow-hidden backdrop-blur-xl">
+                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                    <QrCode size={120} />
+                </div>
+
+                {!selectedEventId ? (
+                    <div className="flex-grow flex flex-col items-center justify-center text-center opacity-20 py-20">
+                        <Search size={48} strokeWidth={1} className="mb-6 text-gold" />
+                        <p className="text-[10px] uppercase tracking-[0.2em] font-bold">Seleziona un evento per caricare la lista ospiti</p>
+                    </div>
+                ) : (
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={selectedEventId}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="h-full flex flex-col"
+                        >
+                            <div className="mb-10 flex justify-between items-end border-b border-white/10 pb-8">
+                                <div>
+                                    <h3 className="text-3xl font-bold uppercase tracking-tighter italic">Guest List</h3>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gold mt-1">Sincronizzazione Real-Time Attiva</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-2xl font-bold tracking-tighter leading-none">{registrations.length}</p>
+                                    <p className="text-[8px] uppercase font-bold text-white/30 tracking-widest mt-1 italic">Total Guest</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                {isLoadingRegs ? (
+                                    <div className="flex flex-col gap-4">
+                                        {[1, 2, 3].map(i => <div key={i} className="h-16 border border-white/5 bg-white/[0.02] animate-pulse" />)}
+                                    </div>
+                                ) : registrations.length > 0 ? (
+                                    registrations.map((reg, idx) => (
+                                        <div key={idx} className="p-5 border border-white/5 bg-white/[0.01] flex items-center justify-between group hover:border-gold/30 hover:bg-gold/[0.02] transition-all">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-[10px] font-bold opacity-30 group-hover:opacity-100 group-hover:border-gold group-hover:text-gold transition-all">
+                                                    {idx + 1}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold uppercase text-xs tracking-tighter group-hover:text-gold transition-colors">{reg.userId?.first_name} {reg.userId?.last_name}</p>
+                                                    <p className="text-[9px] text-white/20 font-medium tracking-widest">{reg.userId?.email}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-[8px] font-bold px-2 py-1 bg-white/5 text-white/40 group-hover:bg-gold group-hover:text-black transition-all uppercase">
+                                                    {reg.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="py-20 text-center border border-dashed border-white/5 flex flex-col items-center gap-4">
+                                        <Users size={32} className="opacity-10" />
+                                        <p className="text-[10px] uppercase font-bold text-white/20 tracking-widest italic">Nessuna prenotazione attiva per questo evento.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {registrations.length > 0 && (
+                                <div className="mt-8 pt-8 border-t border-white/5 grid grid-cols-2 gap-4">
+                                    <button className="py-4 border border-white/10 text-[9px] font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all italic flex items-center justify-center gap-2">
+                                        <Download size={14} /> EXPORT LIST
+                                    </button>
+                                    <button className="py-4 border border-white/10 text-[9px] font-bold uppercase tracking-widest hover:bg-gold hover:text-black hover:border-gold transition-all italic flex items-center justify-center gap-2">
+                                        <Activity size={14} /> METRICS
+                                    </button>
+                                </div>
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
+                )}
+            </div>
+        </div>
+    );
+
+    const renderBookings = () => (
+        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="p-20 border border-dotted border-white/10 text-center opacity-20">
+            <Ticket size={48} className="mx-auto mb-6 text-gold" />
+            <h3 className="text-xl font-bold uppercase tracking-[0.3em] mb-4">Registro Prenotazioni</h3>
+            <p className="text-xs uppercase tracking-widest italic">Modulo in fase di configurazione operativa.</p>
+        </motion.div>
+    );
+
+    const renderUsers = () => (
+        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="p-20 border border-dotted border-white/10 text-center opacity-20">
+            <Users size={48} className="mx-auto mb-6 text-gold" />
+            <h3 className="text-xl font-bold uppercase tracking-[0.3em] mb-4">Gestione Utenti</h3>
+            <p className="text-xs uppercase tracking-widest italic">Interfaccia di amministrazione utenti in sviluppo.</p>
+        </motion.div>
+    );
+
+    const renderSettings = () => (
+        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl mx-auto p-12 border border-white/5 bg-white/[0.01]">
+            <h3 className="text-xl font-bold uppercase tracking-tighter flex items-center gap-4 mb-10">
+                <Settings className="text-gold" size={20} />
+                Global Config
+            </h3>
+            <div className="space-y-8">
+                <div className="flex justify-between items-center border-b border-white/5 pb-6">
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Maintenance Mode</p>
+                        <p className="text-xs text-white/20 mt-1">Hide platform to non-admin users</p>
+                    </div>
+                    <div className="w-12 h-6 bg-white/5 rounded-full flex items-center px-1 border border-white/10">
+                        <div className="w-4 h-4 bg-white/20 rounded-full" />
+                    </div>
+                </div>
+                <div className="flex justify-between items-center border-b border-white/5 pb-6">
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Public Registration</p>
+                        <p className="text-xs text-white/20 mt-1">Allow new user signups</p>
+                    </div>
+                    <div className="w-12 h-6 bg-gold/20 rounded-full flex items-center px-1 border border-gold/40 justify-end">
+                        <div className="w-4 h-4 bg-gold rounded-full" />
+                    </div>
+                </div>
+                <button className="w-full py-4 bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gold hover:text-black transition-all">Update System Parameters</button>
+            </div>
+        </motion.div>
+    );
 
     if (isLoggedIn && (!profile || profile.is_verified === false)) {
         return (
@@ -695,147 +975,42 @@ function AccountContent() {
 
                 {role === "admin" || role === "venue" ? (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                        <div className="lg:col-span-7 flex flex-col gap-10">
-                            <div className="flex justify-between items-center bg-white/[0.02] p-8 border border-white/5 backdrop-blur-sm">
-                                <h2 className="text-2xl font-bold uppercase tracking-tighter flex items-center gap-4">
-                                    <Activity className="text-gold" size={24} />
-                                    Eventi Globali
-                                </h2>
-                                <button
-                                    onClick={() => { setEditingEvent(null); setShowEventModal(true); setImagePreview(null); }}
-                                    className="bg-gold text-black text-[10px] font-bold uppercase px-8 py-3 tracking-widest hover:invert transition-all transform active:scale-95"
-                                >
-                                    CREA EVENTO
-                                </button>
-                            </div>
-
-                            <div className="flex flex-col gap-4">
-                                {isLoading ? (
-                                    <div className="p-8 border border-white/5 bg-white/[0.01] animate-pulse h-32" />
-                                ) : events.length > 0 ? (
-                                    events.map((event) => (
-                                        <div
-                                            key={event.id}
-                                            onClick={() => setSelectedEventId(event.id)}
-                                            className={`p-8 border transition-all cursor-pointer group ${selectedEventId === event.id ? 'border-gold bg-gold/5' : 'border-white/5 bg-white/[0.01] hover:border-white/20'}`}
-                                        >
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gold mb-2">{event.date} • {event.location}</p>
-                                                    <h3 className="text-2xl font-bold uppercase tracking-tighter">{event.title}</h3>
-                                                    <div className="flex items-center gap-4 mt-4">
-                                                        <p className="text-[10px] uppercase tracking-widest text-white/40 flex items-center gap-2">
-                                                            <Users size={12} className="text-gold/40" />
-                                                            {event.regsCount || 0} / {event.regLimit} Booking
-                                                        </p>
-                                                        {event.isSoldOut && (
-                                                            <span className="text-[8px] font-bold px-2 py-0.5 border border-red-500/50 text-red-500 uppercase">Sold Out</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); setEditingEvent(event); setShowEventModal(true); }}
-                                                        className="p-3 border border-white/10 hover:border-white/40 text-white/40 hover:text-white transition-all bg-white/5"
-                                                    >
-                                                        <Edit size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDeleteEvent(event.id);
-                                                        }}
-                                                        className="p-3 border border-white/10 hover:border-red-500/50 text-white/40 hover:text-red-500 transition-all bg-white/5"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="p-20 border border-dotted border-white/10 text-center opacity-20">
-                                        <p className="text-xs uppercase tracking-widest">Nessun evento presente nel database.</p>
-                                    </div>
-                                )}
+                        {/* Sidebar Column */}
+                        <div className="lg:col-span-3">
+                            <div className="sticky top-40">
+                                {renderSidebar()}
                             </div>
                         </div>
 
-                        <div className="lg:col-span-5 border border-white/10 bg-white/[0.01] flex flex-col p-8 md:p-10 min-h-[600px] relative overflow-hidden backdrop-blur-xl">
-                            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                                <QrCode size={120} />
-                            </div>
+                        {/* Content Column */}
+                        <div className="lg:col-span-9">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={activeTab}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                                >
+                                    <div className="mb-12 border-b border-white/5 pb-8 flex justify-between items-end">
+                                        <h2 className="text-5xl font-black italic tracking-tighter uppercase leading-none">
+                                            {activeTab === 'home' && 'HOME'}
+                                            {activeTab === 'events' && 'EVENTI'}
+                                            {activeTab === 'bookings' && 'PRENOTAZIONI'}
+                                            {activeTab === 'users' && 'UTENTI'}
+                                            {activeTab === 'settings' && 'IMPOSTAZIONI'}
+                                            <span className="text-gold ml-2">Section.</span>
+                                        </h2>
+                                        <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 italic">VŌLTA Admin System v1.2</p>
+                                    </div>
 
-                            {!selectedEventId ? (
-                                <div className="flex-grow flex flex-col items-center justify-center text-center opacity-20 py-20">
-                                    <Search size={48} strokeWidth={1} className="mb-6 text-gold" />
-                                    <p className="text-[10px] uppercase tracking-[0.2em] font-bold">Seleziona un evento per caricare la lista ospiti</p>
-                                </div>
-                            ) : (
-                                <AnimatePresence mode="wait">
-                                    <motion.div
-                                        key={selectedEventId}
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        className="h-full flex flex-col"
-                                    >
-                                        <div className="mb-10 flex justify-between items-end border-b border-white/10 pb-8">
-                                            <div>
-                                                <h3 className="text-3xl font-bold uppercase tracking-tighter italic">VŌLTA List</h3>
-                                                <p className="text-[9px] font-bold uppercase tracking-widest text-gold mt-1">Sincronizzazione Real-Time Attiva</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-2xl font-bold tracking-tighter leading-none">{registrations.length}</p>
-                                                <p className="text-[8px] uppercase font-bold text-white/30 tracking-widest mt-1 italic">Total Guest</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                                            {isLoadingRegs ? (
-                                                <div className="flex flex-col gap-4">
-                                                    {[1, 2, 3].map(i => <div key={i} className="h-16 border border-white/5 bg-white/[0.02] animate-pulse" />)}
-                                                </div>
-                                            ) : registrations.length > 0 ? (
-                                                registrations.map((reg, idx) => (
-                                                    <div key={idx} className="p-5 border border-white/5 bg-white/[0.01] flex items-center justify-between group hover:border-gold/30 hover:bg-gold/[0.02] transition-all">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-[10px] font-bold opacity-30 group-hover:opacity-100 group-hover:border-gold group-hover:text-gold transition-all">
-                                                                {idx + 1}
-                                                            </div>
-                                                            <div>
-                                                                <p className="font-bold uppercase text-xs tracking-tighter group-hover:text-gold transition-colors">{reg.userId?.name}</p>
-                                                                <p className="text-[9px] text-white/20 font-medium tracking-widest">{reg.userId?.email}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="text-[8px] font-bold px-2 py-1 bg-white/5 text-white/40 group-hover:bg-gold group-hover:text-black transition-all">
-                                                                {reg.status}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="py-20 text-center border border-dashed border-white/5 flex flex-col items-center gap-4">
-                                                    <Users size={32} className="opacity-10" />
-                                                    <p className="text-[10px] uppercase font-bold text-white/20 tracking-widest italic">Nessuna prenotazione attiva per questo evento.</p>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {registrations.length > 0 && (
-                                            <div className="mt-8 pt-8 border-t border-white/5 grid grid-cols-2 gap-4">
-                                                <button className="py-4 border border-white/10 text-[9px] font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all italic flex items-center justify-center gap-2">
-                                                    <Download size={14} /> EXPORT GUEST LIST
-                                                </button>
-                                                <button className="py-4 border border-white/10 text-[9px] font-bold uppercase tracking-widest hover:bg-gold hover:text-black hover:border-gold transition-all italic flex items-center justify-center gap-2">
-                                                    <Info size={14} /> LIVE ANALYTICS
-                                                </button>
-                                            </div>
-                                        )}
-                                    </motion.div>
-                                </AnimatePresence>
-                            )}
+                                    {activeTab === 'home' && renderHome()}
+                                    {activeTab === 'events' && renderEvents()}
+                                    {activeTab === 'bookings' && renderBookings()}
+                                    {activeTab === 'users' && renderUsers()}
+                                    {activeTab === 'settings' && renderSettings()}
+                                </motion.div>
+                            </AnimatePresence>
                         </div>
                     </div>
                 ) : (
@@ -1227,10 +1402,9 @@ function AccountContent() {
                             </form>
                         </motion.div>
                     </div>
-                )
-                }
-            </AnimatePresence >
-        </div >
+                )}
+            </AnimatePresence>
+        </div>
     );
 }
 
