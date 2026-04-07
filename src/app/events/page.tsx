@@ -120,10 +120,10 @@ export default function Events() {
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
                             <div className="w-2 h-2 bg-gold animate-pulse" />
-                            <span className="text-gold font-black uppercase text-[10px] tracking-[0.6em] italic">VŌLTA SQUADRON • 2026</span>
+                            <span className="text-gold font-black uppercase text-[10px] tracking-[0.6em] italic">Anno • {new Date().getFullYear()}</span>
                         </div>
                         <h1 className="text-7xl md:text-[10rem] font-black uppercase tracking-tighter leading-[0.8] italic">
-                            Elite<br />Events.
+                            Prossimi<br />Eventi
                         </h1>
                     </div>
                     <div className="max-w-sm space-y-6">
@@ -270,7 +270,7 @@ export default function Events() {
                     className="pt-24 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-8"
                 >
                     <p className="text-[9px] uppercase font-black tracking-[0.5em] text-white/20">
-                        © 2026 VŌLTA MESSINA • ALL RIGHTS RESERVED
+                        © {new Date().getFullYear()} VŌLTA MESSINA • ALL RIGHTS RESERVED
                     </p>
                     <div className="flex items-center gap-8 text-[9px] font-black uppercase tracking-[0.3em] text-white/40 italic">
                         <span>Physical Payment Only</span>

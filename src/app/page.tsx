@@ -165,7 +165,7 @@ export default function Home() {
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
-                        className="relative aspect-square brutalist-border overflow-hidden"
+                        className="relative aspect-[4/5] brutalist-border overflow-hidden"
                     >
                         <Image
                             src={nextEvent?.image || "/assets/DSC_0395.JPG"}

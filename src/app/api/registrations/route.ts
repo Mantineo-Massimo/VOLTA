@@ -74,7 +74,7 @@ export async function POST(req: Request) {
                     </p>
 
                     <div style="margin-top: 60px; border-top: 1px solid #222; pt: 20px; text-align: center;">
-                        <p style="font-size: 10px; letter-spacing: 4px; color: #333; text-transform: uppercase;">VŌLTA Messina 2026</p>
+                        <p style="font-size: 10px; letter-spacing: 4px; color: #333; text-transform: uppercase;">VŌLTA Messina ${new Date().getFullYear()}</p>
                     </div>
                 </div>
             `;

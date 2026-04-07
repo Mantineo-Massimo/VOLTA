@@ -1089,7 +1089,7 @@ function AccountContent() {
                                             {profile?.first_name || profile?.full_name?.split(' ')[0]} {profile?.last_name || profile?.full_name?.split(' ')[1]}
                                         </h2>
                                         <p className="text-[9px] font-mono tracking-widest text-gold/80 uppercase">
-                                            VOLTA-{profile?.id?.substring(0, 8).toUpperCase()}-2026
+                                            VOLTA-{profile?.id?.substring(0, 8).toUpperCase()}-{new Date().getFullYear()}
                                         </p>
                                     </div>
 
@@ -1200,7 +1200,7 @@ function AccountContent() {
                                             <div className="pt-2">
                                                 <p className="text-[8px] uppercase tracking-widest text-white/20 mb-2">Member Since</p>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white italic">Febbraio 2026</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white italic">{new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' }).format(new Date())}</span>
                                                     <div className="w-1 h-1 bg-gold rounded-full" />
                                                 </div>
                                             </div>
@@ -1540,7 +1540,7 @@ function AccountContent() {
                                                     <h4 className="text-3xl font-black uppercase tracking-tighter italic leading-none truncate">{eventFormData.title || editingEvent?.title || "Event Header"}</h4>
                                                     <div className="flex justify-between items-end mt-4">
                                                         <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
-                                                            {(eventFormData.location || editingEvent?.location || "MESSINA").toUpperCase()} // {eventFormData.eventDate ? new Date(eventFormData.eventDate).getFullYear() : (editingEvent?.event_date ? new Date(editingEvent.event_date).getFullYear() : "2026")}
+                                                            {(eventFormData.location || editingEvent?.location || "MESSINA").toUpperCase()} // {eventFormData.eventDate ? new Date(eventFormData.eventDate).getFullYear() : (editingEvent?.event_date ? new Date(editingEvent.event_date).getFullYear() : new Date().getFullYear())}
                                                         </div>
                                                         <div className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/10 text-[8px] font-black uppercase tracking-widest">
                                                             VIEW ENTRY
