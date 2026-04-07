@@ -378,20 +378,38 @@ function AccountContent() {
             eventData.time = `${start} - ${end}`;
 
             // Handle Image
-            if (mergedData.imageFile instanceof File && mergedData.imageFile.size > 0) {
-                const uploadFormData = new FormData();
-                uploadFormData.append('file', mergedData.imageFile);
-                uploadFormData.append('upload_preset', 'volta_preset');
+            let finalImageUrl = editingEvent?.image || "/assets/DSC_0036.JPG";
 
-                const res = await fetch('https://api.cloudinary.com/v1_1/dmod7mzvf/image/upload', {
-                    method: 'POST',
-                    body: uploadFormData
-                });
-                const data = await res.json();
-                if (data.secure_url) eventData.image = data.secure_url;
-            } else {
-                eventData.image = eventData.image || imagePreview || editingEvent?.image || "/assets/DSC_0036.JPG";
+            if (mergedData.imageFile instanceof File && mergedData.imageFile.size > 0) {
+                try {
+                    const uploadFormData = new FormData();
+                    uploadFormData.append('file', mergedData.imageFile);
+                    uploadFormData.append('upload_preset', 'volta_preset');
+
+                    const res = await fetch('https://api.cloudinary.com/v1_1/dmod7mzvf/image/upload', {
+                        method: 'POST',
+                        body: uploadFormData
+                    });
+
+                    if (res.ok) {
+                        const cloudData = await res.json();
+                        if (cloudData.secure_url) {
+                            finalImageUrl = cloudData.secure_url;
+                        }
+                    } else {
+                        console.error("Cloudinary upload failed", await res.text());
+                    }
+                } catch (cloudinaryErr) {
+                    console.error("Cloudinary connection error", cloudinaryErr);
+                }
+            } else if (imagePreview && imagePreview.startsWith('http')) {
+                // If we already have a URL (from a previous upload attempt or state)
+                finalImageUrl = imagePreview;
+            } else if (editingEvent?.image) {
+                finalImageUrl = editingEvent.image;
             }
+
+            eventData.image = finalImageUrl;
 
             if (editingEvent) {
                 const { error } = await supabase
