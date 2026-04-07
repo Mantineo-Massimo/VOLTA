@@ -222,8 +222,8 @@ function AccountContent() {
         fetchEvents();
     }, []);
 
-    const role = searchParams?.get("mode") === "admin" ? "admin" : (profile?.role || null);
-    const isLoggedIn = searchParams?.get("mode") === "admin" ? true : (status === "authenticated");
+    const role = profile?.role || null;
+    const isLoggedIn = status === "authenticated";
 
     const [userRegistrations, setUserRegistrations] = useState<any[]>([]);
     const [isLoadingUserRegs, setIsLoadingUserRegs] = useState(false);
@@ -780,7 +780,7 @@ function AccountContent() {
         </motion.div>
     );
 
-    if (false && isLoggedIn && (!profile || profile.is_verified === false)) {
+    if (isLoggedIn && (!profile || profile.is_verified === false)) {
         return (
             <div className="min-h-screen bg-black pt-32 pb-24 px-6 flex flex-col items-center justify-center relative font-sans text-white text-center">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gold/5 blur-[120px] rounded-full pointer-events-none" />
