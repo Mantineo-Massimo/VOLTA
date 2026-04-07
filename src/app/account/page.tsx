@@ -94,15 +94,33 @@ function AccountContent() {
                 setAuthMessage({ type: 'success', text: "PROFILO AGGIORNATO CON SUCCESSO" });
             }
 
-            // Refresh local profile state
-            setProfile({
-                ...profile,
-                first_name: editFirstName,
-                last_name: editLastName,
-                email: editEmail,
-                phone: editPhone,
-                full_name: `${editFirstName} ${editLastName}`
-            });
+            // Refresh local profile state by REFETCHING (cleanest)
+            const { data: updatedProfile, error: refetchError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', freshUser.id)
+                .single();
+
+            if (refetchError) {
+                // If refetch fails, we can at least use local data
+                setProfile({
+                    ...profile,
+                    first_name: editFirstName,
+                    last_name: editLastName,
+                    email: editEmail,
+                    phone: editPhone,
+                    full_name: `${editFirstName} ${editLastName}`
+                });
+            } else {
+                setProfile(updatedProfile);
+            }
+
+            // Sync user state for auth email changed
+            if (editEmail.toLowerCase() !== freshUser.email?.toLowerCase()) {
+                const { data: { user: latestUser } } = await supabase.auth.getUser();
+                if (latestUser) setUser(latestUser);
+            }
+
             setIsEditingProfile(false);
 
         } catch (err: any) {
