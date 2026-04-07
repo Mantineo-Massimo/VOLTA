@@ -14,6 +14,7 @@ export default function Events() {
     const [activeEvents, setActiveEvents] = useState<any[]>([]);
     const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
     const [isRegistered, setIsRegistered] = useState(false);
+    const [alreadyRegistered, setAlreadyRegistered] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     const isLoggedIn = status === "authenticated";
@@ -62,6 +63,23 @@ export default function Events() {
     useEffect(() => {
         fetchEvents();
     }, []);
+
+    useEffect(() => {
+        const checkRegistration = async () => {
+            if (user && selectedEvent) {
+                const { data } = await supabase
+                    .from('registrations')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .eq('event_id', selectedEvent.id)
+                    .single();
+                setAlreadyRegistered(!!data);
+            } else {
+                setAlreadyRegistered(false);
+            }
+        };
+        checkRegistration();
+    }, [user, selectedEvent, supabase]);
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -316,7 +334,7 @@ export default function Events() {
                                     <h4 className="text-4xl font-black uppercase tracking-tighter italic text-white leading-none">
                                         {selectedEvent.title}
                                     </h4>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 max-w-xs leading-relaxed italic">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 max-w-xs leading-relaxed italic whitespace-pre-wrap">
                                         {selectedEvent.description}
                                     </p>
                                 </div>
@@ -416,10 +434,10 @@ export default function Events() {
 
                                                         <button
                                                             onClick={handleRegister}
-                                                            disabled={(selectedEvent.regs_count || 0) >= (selectedEvent.reg_limit || 0) || selectedEvent.sold_out_type === 'LISTA' || selectedEvent.sold_out_type === 'COMPLETO'}
-                                                            className="w-full bg-gold text-black py-8 font-black uppercase text-xs tracking-[0.6em] hover:shadow-[0_0_50px_rgba(255,184,0,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-10 disabled:grayscale italic"
+                                                            disabled={alreadyRegistered || (selectedEvent.regs_count || 0) >= (selectedEvent.reg_limit || 0) || selectedEvent.sold_out_type === 'LISTA' || selectedEvent.sold_out_type === 'COMPLETO'}
+                                                            className="w-full bg-gold text-black py-8 font-black uppercase text-xs tracking-[0.6em] hover:shadow-[0_0_50px_rgba(255,184,0,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-30 disabled:grayscale italic"
                                                         >
-                                                            AUTORIZZA PRENOTAZIONE
+                                                            {alreadyRegistered ? "GIÀ PRENOTATO" : "PRENOTATI"}
                                                         </button>
                                                     </div>
                                                 )}
