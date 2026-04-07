@@ -222,9 +222,11 @@ function AccountContent() {
     const [isSignup, setIsSignup] = useState(mode === "signup");
     const [authName, setAuthName] = useState("");
     const [authMessage, setAuthMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [isAuthLoading, setIsAuthLoading] = useState(false);
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsAuthLoading(true);
 
         if (isSignup) {
             try {
@@ -251,9 +253,7 @@ function AccountContent() {
                     text: "MEMBERSHIP CREATA. BENVENUTO NEL CLUB. CONTROLLA LA TUA EMAIL."
                 });
 
-                // Clear fields
-                setAuthEmail("");
-                setAuthPassword("");
+                // Clear fields (keep email/password for easy login)
                 setAuthFirstName("");
                 setAuthLastName("");
                 setAuthPhone("");
@@ -270,6 +270,8 @@ function AccountContent() {
                 });
             } catch (err: any) {
                 setAuthMessage({ type: 'error', text: err.message?.toUpperCase() || "ERRORE DURANTE LA REGISTRAZIONE" });
+            } finally {
+                setIsAuthLoading(false);
             }
         } else {
             const { error } = await supabase.auth.signInWithPassword({
@@ -279,6 +281,7 @@ function AccountContent() {
             if (error) {
                 setAuthMessage({ type: 'error', text: "Credenziali non valide: " + error.message });
             }
+            setIsAuthLoading(false);
         }
     };
 
@@ -421,9 +424,10 @@ function AccountContent() {
 
                         <button
                             type="submit"
-                            className="w-full bg-white text-black py-5 font-bold uppercase text-[10px] tracking-[0.3em] hover:bg-gold transition-all"
+                            disabled={isAuthLoading}
+                            className="w-full bg-white text-black py-5 font-bold uppercase text-[10px] tracking-[0.3em] hover:bg-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isSignup ? "Create Membership" : "Sign In / Enter"}
+                            {isAuthLoading ? "CARICAMENTO..." : (isSignup ? "Create Membership" : "Sign In / Enter")}
                         </button>
 
                         <div className="pt-4 text-center">
