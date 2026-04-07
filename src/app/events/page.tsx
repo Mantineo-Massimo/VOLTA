@@ -139,84 +139,96 @@ export default function Events() {
                         [1, 2, 3].map(i => (
                             <div key={i} className="aspect-[4/5] bg-white/5 animate-pulse rounded-3xl" />
                         ))
-                    ) : activeEvents.map((event, i) => {
-                        const isFull = (event.regs_count || 0) >= (event.reg_limit || 0);
-                        const statusLabel = event.is_sold_out || isFull ? "Sold Out" :
-                            ((event.regs_count || 0) / (event.reg_limit || 1) > 0.8) ? "Low Availability" : "Upcoming";
+                    ) : activeEvents.length > 0 ? (
+                        activeEvents.map((event, i) => {
+                            const isFull = (event.regs_count || 0) >= (event.reg_limit || 0);
+                            const statusLabel = event.is_sold_out || isFull ? "Sold Out" :
+                                ((event.regs_count || 0) / (event.reg_limit || 1) > 0.8) ? "Low Availability" : "Upcoming";
 
-                        return (
-                            <motion.div
-                                key={event.id}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                viewport={{ once: true }}
-                                className="group relative flex flex-col bg-white/5 rounded-3xl overflow-hidden border border-white/5 hover:border-gold/30 transition-all duration-500 cursor-pointer"
-                                onClick={() => setSelectedEvent(event)}
-                            >
-                                {/* Card Image */}
-                                <div className="aspect-[4/5] relative overflow-hidden">
-                                    <Image
-                                        src={event.image || "/assets/DSC_0036.JPG"}
-                                        alt={event.title}
-                                        fill
-                                        className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-                                    <div className="absolute top-4 left-4">
-                                        <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full shadow-xl ${statusLabel === 'Sold Out' ? 'bg-red-500 text-white' : 'bg-gold text-black'}`}>
-                                            {statusLabel}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Card Content */}
-                                <div className="p-8 flex flex-col flex-grow gap-6">
-                                    <div className="space-y-2 text-left">
-                                        <div className="flex items-center gap-4 text-gold uppercase text-[9px] font-bold tracking-[0.2em]">
-                                            <span>{event.date}</span>
-                                            <div className="w-1 h-1 rounded-full bg-gold/30" />
-                                            <span>{event.location}</span>
-                                        </div>
-                                        <h2 className="text-3xl font-bold uppercase tracking-tighter italic group-hover:text-gold transition-colors">{event.title}</h2>
-                                        <div className="flex items-center gap-4">
-                                            <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">{event.genre}</p>
-                                            <div className="flex items-center gap-2 text-[9px] font-bold text-gold/60">
-                                                <User size={10} />
-                                                <span>{event.regs_count || 0} / {event.reg_limit || 0}</span>
-                                            </div>
+                            return (
+                                <motion.div
+                                    key={event.id}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    viewport={{ once: true }}
+                                    className="group relative flex flex-col bg-white/5 rounded-3xl overflow-hidden border border-white/5 hover:border-gold/30 transition-all duration-500 cursor-pointer"
+                                    onClick={() => setSelectedEvent(event)}
+                                >
+                                    {/* Card Image */}
+                                    <div className="aspect-[4/5] relative overflow-hidden">
+                                        <Image
+                                            src={event.image || "/assets/DSC_0036.JPG"}
+                                            alt={event.title}
+                                            fill
+                                            className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                                        <div className="absolute top-4 left-4">
+                                            <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full shadow-xl ${statusLabel === 'Sold Out' ? 'bg-red-500 text-white' : 'bg-gold text-black'}`}>
+                                                {statusLabel}
+                                            </span>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 text-white/40 text-[10px] font-bold uppercase tracking-widest border-t border-white/5 pt-6 text-left">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <MapPin size={12} className="text-gold" />
-                                                <span>{event.venue}</span>
+                                    {/* Card Content */}
+                                    <div className="p-8 flex flex-col flex-grow gap-6">
+                                        <div className="space-y-2 text-left">
+                                            <div className="flex items-center gap-4 text-gold uppercase text-[9px] font-bold tracking-[0.2em]">
+                                                <span>{event.date}</span>
+                                                <div className="w-1 h-1 rounded-full bg-gold/30" />
+                                                <span>{event.location}</span>
                                             </div>
-                                            <div className="flex items-center gap-3">
-                                                <Clock size={12} className="text-gold" />
-                                                <span>{event.time?.split(' - ')[0]}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3 text-white/80">
-                                                <Music size={12} className="text-gold" />
-                                                <span>{event.dj}</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                {event.dresscode && <span className="border border-white/10 px-2 py-0.5 text-[8px]">DRESSCODE</span>}
+                                            <h2 className="text-3xl font-bold uppercase tracking-tighter italic group-hover:text-gold transition-colors">{event.title}</h2>
+                                            <div className="flex items-center gap-4">
+                                                <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">{event.genre}</p>
+                                                <div className="flex items-center gap-2 text-[9px] font-bold text-gold/60">
+                                                    <User size={10} />
+                                                    <span>{event.regs_count || 0} / {event.reg_limit || 0}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <button className="w-full mt-auto py-4 border border-white/10 uppercase text-[10px] font-bold tracking-[0.3em] group-hover:bg-white group-hover:text-black transition-all duration-500 rounded-xl">
-                                        Dettagli Evento
-                                    </button>
-                                </div>
-                            </motion.div>
-                        );
-                    })}
+                                        <div className="space-y-4 text-white/40 text-[10px] font-bold uppercase tracking-widest border-t border-white/5 pt-6 text-left">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <MapPin size={12} className="text-gold" />
+                                                    <span>{event.venue}</span>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <Clock size={12} className="text-gold" />
+                                                    <span>{event.time?.split(' - ')[0]}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3 text-white/80">
+                                                    <Music size={12} className="text-gold" />
+                                                    <span>{event.dj}</span>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    {event.dresscode && <span className="border border-white/10 px-2 py-0.5 text-[8px]">DRESSCODE</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button className="w-full mt-auto py-4 border border-white/10 uppercase text-[10px] font-bold tracking-[0.3em] group-hover:bg-white group-hover:text-black transition-all duration-500 rounded-xl">
+                                            Dettagli Evento
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            );
+                        })
+                    ) : (
+                        <div className="col-span-full py-32 flex flex-col items-center justify-center text-center space-y-6 bg-white/[0.02] border border-dashed border-white/10 rounded-[3rem]">
+                            <div className="w-20 h-20 rounded-full bg-gold/10 flex items-center justify-center border border-gold/20">
+                                <Music size={32} className="text-gold opacity-50" />
+                            </div>
+                            <div className="space-y-2">
+                                <h3 className="text-2xl font-bold uppercase tracking-tighter italic">Nessun Evento Programmato.</h3>
+                                <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-white/20">Stiamo preparando la prossima grande sVŌLTA.</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Footer Note */}
@@ -225,7 +237,7 @@ export default function Events() {
                     whileInView={{ opacity: 1 }}
                     className="text-center text-[10px] uppercase font-bold tracking-[0.5em] text-white/20 pt-12 border-t border-white/5"
                 >
-                    Importante: Il pagamento della quota associativa avviene esclusivamente presso la cassa del locale.
+                    Importante: Il pagamento avviene esclusivamente presso la cassa del locale.
                 </motion.p>
             </div>
 
