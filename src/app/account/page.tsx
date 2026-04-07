@@ -37,6 +37,45 @@ function AccountContent() {
     const [authLastName, setAuthLastName] = useState("");
     const [authPhone, setAuthPhone] = useState("");
 
+    // Profile Edit State
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [editFirstName, setEditFirstName] = useState("");
+    const [editLastName, setEditLastName] = useState("");
+    const [editPhone, setEditPhone] = useState("");
+
+    const handleUpdateProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsAuthLoading(true);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    first_name: editFirstName,
+                    last_name: editLastName,
+                    phone: editPhone,
+                    full_name: `${editFirstName} ${editLastName}`
+                })
+                .eq('id', user.id);
+
+            if (error) throw error;
+
+            // Refresh local profile state
+            setProfile({
+                ...profile,
+                first_name: editFirstName,
+                last_name: editLastName,
+                phone: editPhone,
+                full_name: `${editFirstName} ${editLastName}`
+            });
+            setIsEditingProfile(false);
+            setAuthMessage({ type: 'success', text: "PROFILO AGGIORNATO CON SUCCESSO" });
+        } catch (err: any) {
+            setAuthMessage({ type: 'error', text: err.message?.toUpperCase() || "ERRORE AGGIORNAMENTO" });
+        } finally {
+            setIsAuthLoading(false);
+        }
+    };
+
     useEffect(() => {
         const getSession = async () => {
             const { data: { session } } = await supabase.auth.getSession();
@@ -685,27 +724,96 @@ function AccountContent() {
 
                             {/* Profile Details Card */}
                             <div className="bg-white/[0.02] border border-white/5 p-8 backdrop-blur-xl group hover:border-white/10 transition-colors">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-6 flex items-center gap-2">
-                                    <User size={12} className="text-gold" /> DATI ACCOUNT
-                                </h3>
-                                <div className="space-y-6">
-                                    <div>
-                                        <p className="text-[8px] uppercase tracking-widest text-white/20 mb-1">Email Registrata</p>
-                                        <p className="text-xs font-bold uppercase tracking-widest border-b border-white/5 pb-2 truncate">{profile?.email}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[8px] uppercase tracking-widest text-white/20 mb-1">Recapito Telefonico</p>
-                                        <p className="text-xs font-bold uppercase tracking-widest border-b border-white/5 pb-2 text-white/60">
-                                            {profile?.phone || "DATO NON DISPONIBILE"}
-                                        </p>
-                                    </div>
-                                    <div className="pt-2">
-                                        <p className="text-[8px] uppercase tracking-widest text-white/20 mb-2">Membership</p>
-                                        <div className="flex items-center gap-2">
-                                            <div className="px-3 py-1 bg-gold text-black text-[8px] font-black uppercase tracking-widest">TIER 01 / BASE</div>
-                                            <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">Feb 2026</span>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 flex items-center gap-2">
+                                        <User size={12} className="text-gold" /> DATI ACCOUNT
+                                    </h3>
+                                    {!isEditingProfile ? (
+                                        <button
+                                            onClick={() => {
+                                                setEditFirstName(profile?.first_name || "");
+                                                setEditLastName(profile?.last_name || "");
+                                                setEditPhone(profile?.phone || "");
+                                                setIsEditingProfile(true);
+                                            }}
+                                            className="text-[9px] font-bold uppercase tracking-widest text-gold hover:text-white transition-colors flex items-center gap-1"
+                                        >
+                                            <Edit size={10} /> EDIT
+                                        </button>
+                                    ) : (
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={() => setIsEditingProfile(false)}
+                                                className="text-[9px] font-bold uppercase tracking-widest text-white/20 hover:text-white transition-colors"
+                                            >
+                                                CANCEL
+                                            </button>
                                         </div>
-                                    </div>
+                                    )}
+                                </div>
+
+                                <div className="space-y-6">
+                                    {isEditingProfile ? (
+                                        <form onSubmit={handleUpdateProfile} className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-[8px] uppercase tracking-widest text-white/20">Nome</label>
+                                                    <input
+                                                        required
+                                                        value={editFirstName}
+                                                        onChange={(e) => setEditFirstName(e.target.value)}
+                                                        className="w-full bg-white/5 border border-white/10 p-2 text-xs font-bold uppercase tracking-widest focus:border-gold outline-none"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[8px] uppercase tracking-widest text-white/20">Cognome</label>
+                                                    <input
+                                                        required
+                                                        value={editLastName}
+                                                        onChange={(e) => setEditLastName(e.target.value)}
+                                                        className="w-full bg-white/5 border border-white/10 p-2 text-xs font-bold uppercase tracking-widest focus:border-gold outline-none"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[8px] uppercase tracking-widest text-white/20">Telefono</label>
+                                                <input
+                                                    required
+                                                    value={editPhone}
+                                                    onChange={(e) => setEditPhone(e.target.value)}
+                                                    className="w-full bg-white/5 border border-white/10 p-2 text-xs font-bold uppercase tracking-widest focus:border-gold outline-none"
+                                                />
+                                            </div>
+                                            <button
+                                                type="submit"
+                                                disabled={isAuthLoading}
+                                                className="w-full bg-gold text-black py-3 text-[9px] font-black uppercase tracking-widest hover:bg-white transition-colors"
+                                            >
+                                                {isAuthLoading ? "SALVATAGGIO..." : "SALVA MODIFICHE"}
+                                            </button>
+                                        </form>
+                                    ) : (
+                                        <>
+                                            <div>
+                                                <p className="text-[8px] uppercase tracking-widest text-white/20 mb-1">Email Registrata</p>
+                                                <p className="text-xs font-bold uppercase tracking-widest border-b border-white/5 pb-2 truncate">{profile?.email}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[8px] uppercase tracking-widest text-white/20 mb-1">Recapito Telefonico</p>
+                                                <p className="text-xs font-bold uppercase tracking-widest border-b border-white/5 pb-2 text-white/60">
+                                                    {profile?.phone || "DATO NON DISPONIBILE"}
+                                                </p>
+                                            </div>
+                                            <div className="pt-2">
+                                                <p className="text-[8px] uppercase tracking-widest text-white/20 mb-2">Member Since</p>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white italic">Febbraio 2026</span>
+                                                    <div className="w-1 h-1 bg-gold rounded-full" />
+                                                    <span className="text-[8px] font-bold uppercase tracking-widest text-white/40">Verified</span>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
