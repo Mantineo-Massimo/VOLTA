@@ -132,7 +132,7 @@ export default function Events() {
                             <span className="text-[10px] uppercase font-black tracking-[0.3em]">Authorized Access Only</span>
                         </div>
                         <p className="text-xs uppercase font-bold tracking-widest text-white/40 leading-relaxed text-justify italic">
-                            L&apos;accesso alle esperienze VŌLTA è riservato esclusivamente ai membri verificati. Ogni evento è un capitolo unico della nostra narrativa sonora.
+                            L&apos;accesso alle esperienze VŌLTA è riservato esclusivamente ai membri verificati
                         </p>
                     </div>
                 </motion.div>
@@ -173,9 +173,6 @@ export default function Events() {
                                             FLR-ID: {event.id.substring(0, 8).toUpperCase()}
                                         </span>
                                         <div className="h-[1px] flex-grow mx-4 bg-white/5" />
-                                        <span className="text-[8px] font-black tracking-[0.4em] text-white/20 uppercase">
-                                            v.2.1
-                                        </span>
                                     </div>
 
                                     {/* Main Asset Container */}
