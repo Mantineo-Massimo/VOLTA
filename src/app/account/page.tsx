@@ -295,7 +295,7 @@ function AccountContent() {
 
                     <p className="text-xs uppercase tracking-[0.2em] text-white/60 mb-10 leading-relaxed">
                         IL TUO ACCOUNT È STATO CREATO MA DEVE ESSERE ATTIVATO.
-                        CONTROLLA LA TUA EMAIL (<span className="text-white">{profile.email}</span>) E CLICCA SUL LINK DI CONFERMA PER ACCEDERE AL PORTALE VŌLTA.
+                        CONTROLLA LA TUA EMAIL (<span className="text-white">{profile?.email || '...'}</span>) E CLICCA SUL LINK DI CONFERMA PER ACCEDERE AL PORTALE VŌLTA.
                     </p>
 
                     <div className="space-y-4">
