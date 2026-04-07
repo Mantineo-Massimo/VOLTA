@@ -308,7 +308,7 @@ export default function Events() {
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Entry Access</p>
                                         <div className="flex items-center gap-2">
-                                            <p className="text-sm font-bold uppercase text-white">{selectedEvent.entryType || "MEMBER ONLY"}</p>
+                                            <p className="text-sm font-bold uppercase text-white">{selectedEvent.entry_type || "MEMBER ONLY"}</p>
                                         </div>
                                     </div>
                                     <div className="space-y-1 col-span-2">

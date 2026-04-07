@@ -336,13 +336,15 @@ function AccountContent() {
             const eventData: any = {
                 title: mergedData.title,
                 location: mergedData.location,
+                venue: mergedData.location,
                 dj: mergedData.dj,
                 genre: mergedData.genre,
                 description: mergedData.description,
-                entryType: mergedData.entryType,
+                entry_type: mergedData.entryType,
                 dresscode: mergedData.dresscode,
                 sold_out_type: mergedData.soldOutType,
                 reg_limit: parseInt(mergedData.regLimit as string) || 0,
+                is_sold_out: (mergedData.soldOutType && mergedData.soldOutType !== 'NONE')
             };
 
             // Handle Date
