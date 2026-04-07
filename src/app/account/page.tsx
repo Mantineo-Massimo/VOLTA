@@ -50,6 +50,7 @@ function AccountContent() {
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
         // Ensure user is loaded
         if (!user?.id) {
@@ -82,14 +83,21 @@ function AccountContent() {
                 throw new Error("ERRORE DATABASE: " + profileError.message);
             }
 
-            // STEP 2: Update Auth Email (if changed)
+            // STEP 2: Update Auth Email (if changed) - Call our BRANDED API
             if (editEmail.toLowerCase() !== freshUser.email?.toLowerCase()) {
-                const { error: authError } = await supabase.auth.updateUser({ email: editEmail });
-                if (authError) {
-                    console.error("Auth Email Update Error:", authError);
-                    throw new Error("ERRORE AUTH: " + authError.message);
-                }
-                setAuthMessage({ type: 'success', text: "PROFILO AGGIORNATO. CONFERMA IL CAMBIO NELLA TUA NUOVA EMAIL." });
+                const response = await fetch('/api/auth/update-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newEmail: editEmail })
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "ERRORE RICHIESTA CAMBIO EMAIL");
+
+                setAuthMessage({
+                    type: 'success',
+                    text: result.message || "CONTROLLA LA NUOVA EMAIL PER CONFERMARE IL CAMBIO."
+                });
             } else {
                 setAuthMessage({ type: 'success', text: "PROFILO AGGIORNATO CON SUCCESSO" });
             }
@@ -177,8 +185,14 @@ function AccountContent() {
             setAuthMessage({ type: 'success', text: "ACCOUNT ATTIVATO CON SUCCESSO! ORA PUOI ACCEDERE." });
         } else if (msg === "already_verified") {
             setAuthMessage({ type: 'success', text: "ACCOUNT GIÀ VERIFICATO. ACCEDI PURE." });
+        } else if (msg === "email_verified") {
+            setAuthMessage({ type: 'success', text: "EMAIL AGGIORNATA CON SUCCESSO. ACCEDI PURE CON IL NUOVO INDIRIZZO." });
         } else if (err === "invalid_token") {
             setAuthMessage({ type: 'error', text: "TOKEN DI VERIFICA NON VALIDO O SCADUTO." });
+        } else if (err === "admin_key_missing") {
+            setAuthMessage({ type: 'error', text: "ERRORE DI CONFIGURAZIONE SERVER (CHIAVE ADMIN MANCANTE)." });
+        } else if (err === "auth_sync_failed") {
+            setAuthMessage({ type: 'error', text: "ERRORE DURANTE LA SINCRONIZZAZIONE DELL'ACCOUNT." });
         }
 
         return () => subscription.unsubscribe();
