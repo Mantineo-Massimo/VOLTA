@@ -62,12 +62,12 @@ export async function POST(req: Request) {
             const emailHtml = `
                 <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: auto; padding: 60px 40px; background: #000; color: #fff; border: 1px solid #222;">
                     <div style="margin-bottom: 40px;">
-                        <span style="font-size: 10px; letter-spacing: 5px; color: #FFD700; text-transform: uppercase; font-weight: 900;">SECURITY PROTOCOL.</span>
+                        <span style="font-size: 10px; letter-spacing: 5px; color: #FFB800; text-transform: uppercase; font-weight: 900;">SECURITY PROTOCOL.</span>
                     </div>
                     
                     <h1 style="font-size: 56px; line-height: 0.9; text-transform: uppercase; letter-spacing: -3px; margin: 0 0 40px 0; font-style: italic; font-weight: 900;">
                         VERIFICA <br/>
-                        <span style="color: #FFD700;">PROFILO.</span>
+                        <span style="color: #FFB800;">PROFILO.</span>
                     </h1>
                     
                     <p style="font-size: 16px; line-height: 1.6; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 40px;">
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
                     </p>
                     
                     <a href="${verifyUrl}" 
-                       style="display: inline-block; background: #FFD700; color: #000; padding: 25px 50px; text-decoration: none; font-size: 14px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase;">
+                       style="display: inline-block; background: #FFB800; color: #000; padding: 25px 50px; text-decoration: none; font-size: 14px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase;">
                         ATTIVA MEMBERSHIP
                     </a>
 
