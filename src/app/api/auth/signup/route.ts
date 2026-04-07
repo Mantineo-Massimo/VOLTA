@@ -6,10 +6,10 @@ import crypto from "crypto";
 
 export async function POST(req: Request) {
     try {
-        let { email, password, full_name } = await req.json();
+        let { email, password, first_name, last_name, phone } = await req.json();
         email = email.toLowerCase();
 
-        if (!email || !password || !full_name) {
+        if (!email || !password || !first_name || !last_name) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
             password,
             options: {
                 data: {
-                    full_name,
+                    full_name: `${first_name} ${last_name}`,
                 }
             }
         });
@@ -39,8 +39,11 @@ export async function POST(req: Request) {
                 .insert([
                     {
                         id: authData.user.id,
-                        full_name,
+                        first_name,
+                        last_name,
+                        full_name: `${first_name} ${last_name}`,
                         email,
+                        phone,
                         role: 'user',
                         verification_token: verificationToken,
                         is_verified: false
@@ -68,7 +71,7 @@ export async function POST(req: Request) {
                     </h1>
                     
                     <p style="font-size: 16px; line-height: 1.6; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 40px;">
-                        Ciao ${full_name}, per accedere al portale VŌLTA devi prima attivare la tua membership cliccando il tasto qui sotto.
+                        Ciao ${first_name}, per accedere al portale VŌLTA devi prima attivare la tua membership cliccando il tasto qui sotto.
                     </p>
                     
                     <a href="${verifyUrl}" 

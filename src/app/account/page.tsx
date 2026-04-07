@@ -33,6 +33,9 @@ function AccountContent() {
     // Auth Form State
     const [authEmail, setAuthEmail] = useState("");
     const [authPassword, setAuthPassword] = useState("");
+    const [authFirstName, setAuthFirstName] = useState("");
+    const [authLastName, setAuthLastName] = useState("");
+    const [authPhone, setAuthPhone] = useState("");
 
     useEffect(() => {
         const getSession = async () => {
@@ -233,7 +236,9 @@ function AccountContent() {
                     body: JSON.stringify({
                         email: authEmail,
                         password: authPassword,
-                        full_name: authName
+                        first_name: authFirstName,
+                        last_name: authLastName,
+                        phone: authPhone
                     })
                 });
 
@@ -249,7 +254,9 @@ function AccountContent() {
                 // Clear fields
                 setAuthEmail("");
                 setAuthPassword("");
-                setAuthName("");
+                setAuthFirstName("");
+                setAuthLastName("");
+                setAuthPhone("");
 
                 // Automatic login after signup if session is available
                 // In our API case, we might need a manual login or wait for the auth state to change
@@ -350,17 +357,43 @@ function AccountContent() {
                         )}
                         <div className="space-y-4">
                             {isSignup && (
-                                <div className="space-y-1">
-                                    <label className="text-[9px] uppercase tracking-widest text-white/40 font-bold ml-1">Full Name</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        value={authName}
-                                        onChange={(e) => setAuthName(e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 p-4 outline-none focus:border-gold transition-colors text-sm uppercase font-bold tracking-widest"
-                                        placeholder="NOMINATIVO"
-                                    />
-                                </div>
+                                <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] uppercase tracking-widest text-white/40 font-bold ml-1">Nome</label>
+                                            <input
+                                                required
+                                                type="text"
+                                                value={authFirstName}
+                                                onChange={(e) => setAuthFirstName(e.target.value)}
+                                                className="w-full bg-black/40 border border-white/10 p-4 outline-none focus:border-gold transition-colors text-sm uppercase font-bold tracking-widest"
+                                                placeholder="NOME"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] uppercase tracking-widest text-white/40 font-bold ml-1">Cognome</label>
+                                            <input
+                                                required
+                                                type="text"
+                                                value={authLastName}
+                                                onChange={(e) => setAuthLastName(e.target.value)}
+                                                className="w-full bg-black/40 border border-white/10 p-4 outline-none focus:border-gold transition-colors text-sm uppercase font-bold tracking-widest"
+                                                placeholder="COGNOME"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] uppercase tracking-widest text-white/40 font-bold ml-1">Telefono</label>
+                                        <input
+                                            required
+                                            type="tel"
+                                            value={authPhone}
+                                            onChange={(e) => setAuthPhone(e.target.value)}
+                                            className="w-full bg-black/40 border border-white/10 p-4 outline-none focus:border-gold transition-colors text-sm uppercase font-bold tracking-widest"
+                                            placeholder="+39 3XX XXXXXXX"
+                                        />
+                                    </div>
+                                </>
                             )}
                             <div className="space-y-1">
                                 <label className="text-[9px] uppercase tracking-widest text-white/40 font-bold ml-1">Email</label>
