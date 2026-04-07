@@ -486,7 +486,7 @@ function AccountContent() {
                         </motion.div>
                         <h1 className="text-4xl md:text-7xl font-bold uppercase tracking-tighter leading-none italic">
                             {role === "user" ? (
-                                <>BENTORNATO, <span className="text-gold">{profile?.first_name} {profile?.last_name}</span></>
+                                <>BENTORNATO,<br /> <span className="text-gold">{profile?.first_name} {profile?.last_name}</span></>
                             ) : "Management Hub"}
                         </h1>
                     </div>
