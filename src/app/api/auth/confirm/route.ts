@@ -5,7 +5,8 @@ import { cookies } from "next/headers";
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const token = searchParams.get("token");
-    const email = searchParams.get("email");
+    let email = searchParams.get("email");
+    if (email) email = email.toLowerCase();
 
     if (!token || !email) {
         return NextResponse.redirect(new URL("/account?error=missing_params", req.url));

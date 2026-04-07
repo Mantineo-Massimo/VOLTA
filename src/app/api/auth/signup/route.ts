@@ -6,7 +6,8 @@ import crypto from "crypto";
 
 export async function POST(req: Request) {
     try {
-        const { email, password, full_name } = await req.json();
+        let { email, password, full_name } = await req.json();
+        email = email.toLowerCase();
 
         if (!email || !password || !full_name) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -86,11 +87,16 @@ export async function POST(req: Request) {
                 </div>
             `;
 
-            await sendEmail({
+            const emailResult = await sendEmail({
                 to: email,
                 subject: "VŌLTA | Attivazione Account",
                 html: emailHtml
             });
+
+            if (!emailResult.success) {
+                console.error("SES send error:", emailResult.error);
+                throw new Error(`Errore invio email: ${emailResult.error}`);
+            }
         }
 
         return NextResponse.json({ success: true, user: authData.user }, { status: 201 });
