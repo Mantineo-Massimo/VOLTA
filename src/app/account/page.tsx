@@ -382,28 +382,30 @@ function AccountContent() {
 
             if (mergedData.imageFile instanceof File && mergedData.imageFile.size > 0) {
                 try {
-                    const uploadFormData = new FormData();
-                    uploadFormData.append('file', mergedData.imageFile);
-                    uploadFormData.append('upload_preset', 'volta_preset');
+                    const file = mergedData.imageFile;
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+                    const filePath = fileName;
 
-                    const res = await fetch('https://api.cloudinary.com/v1_1/dmod7mzvf/image/upload', {
-                        method: 'POST',
-                        body: uploadFormData
-                    });
+                    const { error: uploadError } = await supabase.storage
+                        .from('events')
+                        .upload(filePath, file);
 
-                    if (res.ok) {
-                        const cloudData = await res.json();
-                        if (cloudData.secure_url) {
-                            finalImageUrl = cloudData.secure_url;
-                        }
-                    } else {
-                        console.error("Cloudinary upload failed", await res.text());
+                    if (uploadError) {
+                        console.error("Supabase Storage error", uploadError);
+                        throw new Error("ERRORE STORAGE: Assicurati di aver creato il bucket 'events' pubblico su Supabase.");
                     }
-                } catch (cloudinaryErr) {
-                    console.error("Cloudinary connection error", cloudinaryErr);
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('events')
+                        .getPublicUrl(filePath);
+
+                    finalImageUrl = publicUrl;
+                } catch (storageErr: any) {
+                    console.error("Storage connection error", storageErr);
+                    throw new Error(storageErr.message || "Errore durante il caricamento su Supabase Storage.");
                 }
             } else if (imagePreview && imagePreview.startsWith('http')) {
-                // If we already have a URL (from a previous upload attempt or state)
                 finalImageUrl = imagePreview;
             } else if (editingEvent?.image) {
                 finalImageUrl = editingEvent.image;
