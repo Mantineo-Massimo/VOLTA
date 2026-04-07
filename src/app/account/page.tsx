@@ -357,7 +357,11 @@ function AccountContent() {
                 dresscode: mergedData.dresscode,
                 sold_out_type: mergedData.soldOutType,
                 reg_limit: parseInt(mergedData.regLimit as string) || 0,
-                is_sold_out: (mergedData.soldOutType && mergedData.soldOutType !== 'NONE')
+                is_sold_out: (mergedData.soldOutType && mergedData.soldOutType !== 'NONE'),
+                // PERSIST RAW DATA for recovery in Edit mode
+                event_date: mergedData.eventDate,
+                start_time: mergedData.startTime || "23:00",
+                end_time: mergedData.endTime || "05:00"
             };
 
             // Handle Date
@@ -636,7 +640,12 @@ function AccountContent() {
                                     </div>
                                     <div className="flex gap-2">
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); setEditingEvent(event); setShowEventModal(true); }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setImagePreview(null);
+                                                setEditingEvent(event);
+                                                setShowEventModal(true);
+                                            }}
                                             className="p-3 border border-white/10 hover:border-white/40 text-white/40 hover:text-white transition-all bg-white/5"
                                         >
                                             <Edit size={16} />
