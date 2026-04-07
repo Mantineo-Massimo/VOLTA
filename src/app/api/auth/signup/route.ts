@@ -48,6 +48,7 @@ export async function POST(req: Request) {
 
             if (profileError) {
                 console.error("Profile creation error:", profileError);
+                throw new Error("Errore nella creazione del profilo. Hai eseguito il comando SQL?");
             }
 
             // 4. Send Verification Email via AWS SES Directly

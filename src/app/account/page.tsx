@@ -275,7 +275,7 @@ function AccountContent() {
         }
     };
 
-    if (isLoggedIn && profile && profile.is_verified === false) {
+    if (isLoggedIn && (!profile || profile.is_verified === false)) {
         return (
             <div className="min-h-screen bg-black pt-32 pb-24 px-6 flex flex-col items-center justify-center relative font-sans text-white text-center">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gold/5 blur-[120px] rounded-full pointer-events-none" />
