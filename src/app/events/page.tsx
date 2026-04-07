@@ -261,162 +261,200 @@ export default function Events() {
                 </motion.div>
             </div>
 
-            {/* Registration & Specs Modal: The Member Gate */}
+            {/* Modal: Tactical Overlay Redesign */}
             <AnimatePresence>
                 {selectedEvent && (
-                    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-8">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-8"
+                    >
+                        {/* Immersive Background Backdrop */}
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setSelectedEvent(null)}
-                            className="absolute inset-0 bg-black/98 backdrop-blur-3xl"
+                            initial={{ scale: 1.1, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 1.1, opacity: 0 }}
+                            className="absolute inset-0 bg-cover bg-center grayscale brightness-[0.2]"
+                            style={{ backgroundImage: `url(${selectedEvent.image || "/assets/DSC_0036.JPG"})` }}
                         />
+                        <div className="absolute inset-0 bg-black/80 backdrop-blur-3xl" />
+
+                        {/* Tactical Scanline Effect overlay */}
+                        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] z-10 opacity-20" />
+
                         <motion.div
-                            initial={{ scale: 0.95, opacity: 0, y: 50 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 50 }}
-                            className="relative w-full max-w-6xl bg-zinc-900 border border-white/10 overflow-hidden flex flex-col md:flex-row h-full md:h-auto max-h-[90vh] shadow-[0_0_100px_rgba(0,0,0,0.8)]"
+                            initial={{ y: 50, opacity: 0, scale: 0.95 }}
+                            animate={{ y: 0, opacity: 1, scale: 1 }}
+                            exit={{ y: 50, opacity: 0, scale: 0.95 }}
+                            className="relative w-full max-w-7xl h-full md:h-[85vh] bg-zinc-950/40 border-y md:border border-white/10 overflow-hidden flex flex-col md:flex-row shadow-[0_0_100px_rgba(0,0,0,1)] z-20"
                         >
-                            {/* Close Button: Elite Style */}
+                            {/* Close Button: Elite Square */}
                             <button
                                 onClick={() => setSelectedEvent(null)}
-                                className="absolute top-8 right-8 z-50 w-12 h-12 flex items-center justify-center border border-white/10 hover:border-gold hover:text-gold transition-all bg-black group"
+                                className="absolute top-6 right-6 z-50 w-12 h-12 flex items-center justify-center border border-white/10 hover:border-gold hover:text-gold transition-all bg-black/50 backdrop-blur-md group"
                             >
-                                <X size={24} className="group-hover:rotate-90 transition-transform duration-500" />
+                                <X size={20} className="group-hover:rotate-90 transition-transform duration-500" />
                             </button>
 
-                            {/* Left: Deep Info Section */}
-                            <div className="flex-1 p-8 md:p-20 space-y-16 overflow-y-auto border-b md:border-b-0 md:border-r border-white/10 bg-gradient-to-br from-black to-zinc-900/50">
-                                <div className="space-y-8">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-[1px] w-12 bg-gold" />
-                                        <span className="text-gold uppercase text-[10px] font-black tracking-[0.5em] italic">
-                                            {selectedEvent.is_sold_out ? "Mission Completed" : "Active Engagement"}
-                                        </span>
+                            {/* Left: Mission Asset Hub */}
+                            <div className="hidden md:block w-[45%] relative border-r border-white/10 overflow-hidden group/asset">
+                                <Image
+                                    src={selectedEvent.image || "/assets/DSC_0036.JPG"}
+                                    alt={selectedEvent.title}
+                                    fill
+                                    className="object-cover grayscale brightness-50 group-hover/asset:brightness-75 transition-all duration-1000"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
+
+                                {/* Floating Metadata */}
+                                <div className="absolute bottom-12 left-12 space-y-4">
+                                    <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-[0.5em] text-gold animate-pulse">
+                                        <div className="w-2 h-2 bg-gold rounded-full" />
+                                        Asset Live Status: Verified
                                     </div>
-                                    <h3 className="text-6xl md:text-9xl font-black uppercase tracking-tighter leading-[0.85] italic">
+                                    <h4 className="text-4xl font-black uppercase tracking-tighter italic text-white leading-none">
                                         {selectedEvent.title}
-                                    </h3>
-                                    <div className="prose prose-invert max-w-md">
-                                        <p className="text-white/40 text-xs font-black uppercase tracking-widest leading-relaxed italic whitespace-pre-line">
-                                            {selectedEvent.description}
-                                        </p>
-                                    </div>
+                                    </h4>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 max-w-xs leading-relaxed italic">
+                                        {selectedEvent.description}
+                                    </p>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-x-12 gap-y-10">
-                                    {[
-                                        { label: 'Tactical Date', val: selectedEvent.date, icon: Calendar },
-                                        { label: 'Time Window', val: selectedEvent.time, icon: Clock },
-                                        { label: 'Ground Zero', val: selectedEvent.venue || selectedEvent.location, icon: MapPin },
-                                        { label: 'Commanding DJ', val: selectedEvent.dj, icon: Music },
-                                        { label: 'Sound Identity', val: selectedEvent.genre, icon: Zap },
-                                        { label: 'Elite Tier', val: selectedEvent.entry_type || "Members Only", icon: ShieldCheck }
-                                    ].map((spec, idx) => (
-                                        <div key={idx} className="space-y-2">
-                                            <div className="flex items-center gap-2 opacity-30">
-                                                <spec.icon size={10} className="text-gold" />
-                                                <p className="text-[9px] font-black uppercase tracking-[0.2em]">{spec.label}</p>
-                                            </div>
-                                            <p className="text-sm font-black uppercase tracking-tighter italic text-white/90">{spec.val}</p>
-                                        </div>
-                                    ))}
+                                {/* ID Overlay */}
+                                <div className="absolute top-12 left-12 flex items-center gap-4 text-[8px] font-black tracking-[0.4em] text-white/20 uppercase">
+                                    <span>REF: EVT-{selectedEvent.id.substring(0, 8).toUpperCase()}</span>
+                                    <div className="h-[1px] w-8 bg-white/10" />
+                                    <span>AUTH: VOLTA-{new Date().getFullYear()}</span>
                                 </div>
                             </div>
 
-                            {/* Right: Auth Gate & Registration */}
-                            <div className="w-full md:w-[45%] bg-black p-8 md:p-20 flex flex-col justify-center relative">
-                                <div className="absolute inset-0 bg-gold/[0.01] pointer-events-none" />
+                            {/* Right: Operational Control */}
+                            <div className="flex-1 flex flex-col p-8 md:p-16 overflow-y-auto bg-black/40 backdrop-blur-md">
+                                <div className="flex-1 space-y-16">
+                                    {/* Section 01: Logistics Grid */}
+                                    <div className="space-y-8">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-1 h-1 bg-gold" />
+                                            <span className="text-gold text-[10px] font-black uppercase tracking-[0.4em]">Section 01 // Logistics</span>
+                                        </div>
+                                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
+                                            {[
+                                                { label: 'Deployment Date', val: selectedEvent.date, icon: Calendar },
+                                                { label: 'Time Window', val: selectedEvent.time, icon: Clock },
+                                                { label: 'Ground Zero', val: selectedEvent.venue || selectedEvent.location, icon: MapPin },
+                                                { label: 'Principal DJ', val: selectedEvent.dj, icon: Music },
+                                                { label: 'Sound Identity', val: selectedEvent.genre, icon: Zap },
+                                                { label: 'Security Tier', val: selectedEvent.entry_type || "Members Only", icon: ShieldCheck }
+                                            ].map((spec, idx) => (
+                                                <div key={idx} className="space-y-2 group/spec">
+                                                    <div className="flex items-center gap-2 opacity-20 group-hover/spec:opacity-50 transition-opacity">
+                                                        <spec.icon size={10} className="text-gold" />
+                                                        <p className="text-[8px] font-black uppercase tracking-[0.2em]">{spec.label}</p>
+                                                    </div>
+                                                    <p className="text-sm font-black uppercase tracking-tighter italic text-white/90 group-hover/spec:text-gold transition-colors">{spec.val}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
 
-                                {!isRegistered ? (
-                                    <>
-                                        {!isLoggedIn ? (
-                                            <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                                                <div className="space-y-6">
-                                                    <h4 className="text-4xl font-black uppercase tracking-tighter italic leading-none">Accesso<br />Riservato.</h4>
-                                                    <p className="text-[10px] font-black uppercase text-white/20 tracking-widest leading-relaxed italic">
-                                                        L&apos;identità deve essere autenticata per il protocollo di registrazione VŌLTA.
-                                                    </p>
-                                                </div>
-                                                <div className="space-y-4 pt-12">
-                                                    <Link
-                                                        href="/account"
-                                                        className="block w-full border-2 border-gold text-gold py-6 font-black uppercase text-[10px] tracking-[0.4em] hover:bg-gold hover:text-black transition-all text-center italic"
-                                                    >
-                                                        Login / Inizializza
-                                                    </Link>
-                                                    <Link
-                                                        href="/account?mode=signup"
-                                                        className="block w-full border border-white/10 py-6 font-black uppercase text-[10px] tracking-[0.3em] hover:bg-white/5 transition-all text-white/20 text-center italic"
-                                                    >
-                                                        Crea Profilo Elite
-                                                    </Link>
-                                                </div>
+                                    {/* Section 02: Registration Hub */}
+                                    <div className="space-y-8 pt-8 border-t border-white/5">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-1 h-1 bg-gold" />
+                                            <span className="text-gold text-[10px] font-black uppercase tracking-[0.4em]">Section 02 // Auth Hub</span>
+                                        </div>
+
+                                        {!isRegistered ? (
+                                            <div className="space-y-10">
+                                                {!isLoggedIn ? (
+                                                    <div className="bg-white/[0.02] border border-white/5 p-8 space-y-8">
+                                                        <div className="space-y-2">
+                                                            <h4 className="text-2xl font-black uppercase tracking-tighter italic">Accesso Riservato.</h4>
+                                                            <p className="text-[9px] font-bold uppercase text-white/20 tracking-widest italic">Autenticazione richiesta per il protocollo VŌLTA.</p>
+                                                        </div>
+                                                        <div className="flex flex-col sm:flex-row gap-4">
+                                                            <Link href="/account" className="flex-1 bg-gold text-black py-4 px-8 font-black uppercase text-[10px] tracking-[0.3em] hover:scale-105 transition-all text-center italic">Login</Link>
+                                                            <Link href="/account?mode=signup" className="flex-1 border border-white/10 text-white/40 py-4 px-8 font-black uppercase text-[10px] tracking-[0.3em] hover:bg-white/5 transition-all text-center italic">Registrati</Link>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-10">
+                                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 bg-gold/[0.03] border border-gold/10">
+                                                            <div className="flex items-center gap-6">
+                                                                <div className="w-16 h-16 border border-gold/30 flex items-center justify-center bg-gold/5">
+                                                                    <User size={24} className="text-gold" />
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <p className="text-[8px] font-black uppercase text-gold/40 tracking-widest">Authenticated Member</p>
+                                                                    <p className="text-xs font-black uppercase text-white tracking-widest">{user?.email}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1 italic">Protocol Status</p>
+                                                                <div className="inline-flex items-center gap-2 text-gold font-black uppercase text-[10px] tracking-widest italic">
+                                                                    <div className="w-1.5 h-1.5 bg-gold rounded-full animate-pulse" />
+                                                                    Ready to Deploy
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="bg-white/[0.02] border border-white/5 p-6 text-[9px] font-bold uppercase tracking-[0.2em] leading-relaxed text-white/30 italic">
+                                                            <span className="text-gold opacity-50 block mb-2">// WARNING //</span>
+                                                            La registrazione non garantisce l&apos;ingresso. L&apos;accesso finale è subordinato alla convalida fisica dell&apos;identità e al rispetto del Dress Code da parte della sicurezza.
+                                                        </div>
+
+                                                        {((selectedEvent.sold_out_type === 'LISTA' || selectedEvent.sold_out_type === 'COMPLETO') || (selectedEvent.regs_count || 0) >= (selectedEvent.reg_limit || 0)) && (
+                                                            <div className="border border-red-500/50 p-4 bg-red-500/5 text-center">
+                                                                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest italic">
+                                                                    {selectedEvent.sold_out_type === 'LISTA' ? "LISTA CHIUSA (SOLD OUT)" :
+                                                                        selectedEvent.sold_out_type === 'COMPLETO' ? "EVENTO COMPLETO (SOLD OUT)" :
+                                                                            "CAPACITÀ MASSIMA RAGGIUNTA"}
+                                                                </p>
+                                                            </div>
+                                                        )}
+
+                                                        <button
+                                                            onClick={handleRegister}
+                                                            disabled={(selectedEvent.regs_count || 0) >= (selectedEvent.reg_limit || 0) || selectedEvent.sold_out_type === 'LISTA' || selectedEvent.sold_out_type === 'COMPLETO'}
+                                                            className="w-full bg-gold text-black py-8 font-black uppercase text-xs tracking-[0.6em] hover:shadow-[0_0_50px_rgba(255,184,0,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-10 disabled:grayscale italic"
+                                                        >
+                                                            AUTORIZZA PRENOTAZIONE
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         ) : (
-                                            <div className="space-y-12 animate-in slide-in-from-right-8 duration-700">
-                                                <div className="flex items-center gap-6">
-                                                    <div className="w-20 h-20 border border-gold/30 flex items-center justify-center bg-gold/5">
-                                                        <User size={32} className="text-gold" />
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <h4 className="text-2xl font-black uppercase tracking-tighter italic">One-Click Booking</h4>
-                                                        <p className="text-[9px] font-black uppercase text-gold tracking-widest">{user?.email}</p>
-                                                    </div>
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="bg-gold/5 border border-gold/30 p-12 flex flex-col items-center text-center gap-8"
+                                            >
+                                                <div className="w-20 h-20 border-2 border-gold text-gold flex items-center justify-center bg-gold/10 relative">
+                                                    <div className="absolute inset-0 border border-gold animate-ping opacity-20" />
+                                                    <CheckCircle2 size={40} />
                                                 </div>
-
-                                                <div className="space-y-8 pt-8 border-t border-white/10">
-                                                    <div className="flex flex-col gap-2">
-                                                        <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic mb-2">Avviso di Protocollo</p>
-                                                        <div className="p-6 bg-white/[0.02] border border-white/5 text-[9px] font-black uppercase tracking-widest leading-relaxed text-white/30 italic">
-                                                            La registrazione non garantisce l&apos;ingresso. L&apos;accesso finale è subordinato alla verifica fisica e al rispetto del Dress Code da parte del personale di sicurezza.
-                                                        </div>
-                                                    </div>
-
-                                                    {((selectedEvent.sold_out_type === 'LISTA' || selectedEvent.sold_out_type === 'COMPLETO') || (selectedEvent.regs_count || 0) >= (selectedEvent.reg_limit || 0)) && (
-                                                        <div className="border border-red-500/50 p-4 bg-red-500/5">
-                                                            <p className="text-[10px] font-black text-red-500 uppercase tracking-widest text-center italic">
-                                                                {selectedEvent.sold_out_type === 'LISTA' ? "LISTA CHIUSA (SOLD OUT)" :
-                                                                    selectedEvent.sold_out_type === 'COMPLETO' ? "EVENTO COMPLETO (SOLD OUT)" :
-                                                                        "LIMITE PRENOTAZIONI RAGGIUNTO"}
-                                                            </p>
-                                                        </div>
-                                                    )}
-
-                                                    <button
-                                                        onClick={handleRegister}
-                                                        disabled={(selectedEvent.regs_count || 0) >= (selectedEvent.reg_limit || 0) || selectedEvent.sold_out_type === 'LISTA' || selectedEvent.sold_out_type === 'COMPLETO'}
-                                                        className="w-full bg-gold text-black py-8 font-black uppercase text-xs tracking-[0.6em] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-20 disabled:grayscale italic shadow-[0_20px_50px_rgba(255,184,0,0.2)]"
-                                                    >
-                                                        CONFERMA POSTO
-                                                    </button>
+                                                <div className="space-y-4">
+                                                    <h4 className="text-4xl font-black uppercase tracking-tighter italic text-gold">Autorizzato.</h4>
+                                                    <p className="text-[10px] font-black uppercase text-white/50 tracking-[0.2em] leading-relaxed max-w-xs italic">
+                                                        Protocollo di partecipazione confermato per {selectedEvent.title}. Riceverai a breve i dettagli tattici via email.
+                                                    </p>
                                                 </div>
-                                            </div>
+                                                <div className="h-[1px] w-20 bg-gold/20" />
+                                                <p className="text-[8px] font-black uppercase text-gold/40 tracking-[0.6em]">SECURITY SYNCED // VOLTA ELITE</p>
+                                            </motion.div>
                                         )}
-                                    </>
-                                ) : (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        className="flex flex-col items-center text-center gap-12"
-                                    >
-                                        <div className="w-32 h-32 border-4 border-gold text-gold flex items-center justify-center shadow-[0_0_80px_rgba(255,184,0,0.3)] bg-gold/5">
-                                            <CheckCircle2 size={64} className="animate-in zoom-in duration-500" />
-                                        </div>
-                                        <div className="space-y-6">
-                                            <h4 className="text-5xl font-black uppercase tracking-tighter italic text-gold leading-none">Inviato.</h4>
-                                            <p className="text-[11px] font-black uppercase text-white/40 tracking-[0.2em] leading-relaxed max-w-[240px] mx-auto italic">
-                                                Protocollo di partecipazione attivato per {selectedEvent.title}. Controlla la tua email.
-                                            </p>
-                                        </div>
-                                        <div className="h-[1px] w-24 bg-white/10" />
-                                        <p className="text-[8px] font-black uppercase text-white/20 tracking-[0.6em]">VŌLTA • SECURITY SYNCED</p>
-                                    </motion.div>
-                                )}
+                                    </div>
+                                </div>
+
+                                {/* Footer Metadata Strip */}
+                                <div className="mt-16 pt-8 border-t border-white/5 flex justify-between items-center text-white/10 text-[8px] font-black uppercase tracking-[0.4em]">
+                                    <span>VŌLTA Messina // Tactical Interface v.3.0</span>
+                                    <span className="hidden sm:block">Status: Operational</span>
+                                </div>
                             </div>
                         </motion.div>
-                    </div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>
