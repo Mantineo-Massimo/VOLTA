@@ -292,6 +292,14 @@ function AccountContent() {
 
     const handleSaveEvent = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // BLOCK premature submission if not on final stage
+        if (creationStage < 3) {
+            captureStageData();
+            setCreationStage(s => s + 1);
+            return;
+        }
+
         setAuthMessage(null);
 
         // Capture final stage
