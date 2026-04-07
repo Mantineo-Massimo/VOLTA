@@ -258,19 +258,36 @@ function AccountContent() {
                 try {
                     const { data, error } = await supabase
                         .from('registrations')
-                        .select('*, profiles(full_name, email, first_name, last_name)')
+                        .select('*')
                         .eq('event_id', selectedEventId);
 
-                    if (data) {
+                    if (error) throw error;
+
+                    if (data && data.length > 0) {
+                        const userIds = data.map((reg: any) => reg.user_id);
+
+                        const { data: profiles, error: profError } = await supabase
+                            .from('profiles')
+                            .select('id, full_name, email, first_name, last_name')
+                            .in('id', userIds);
+
+                        if (profError) throw profError;
+
+                        const profileMap = (profiles || []).reduce((acc: any, p: any) => {
+                            acc[p.id] = p;
+                            return acc;
+                        }, {});
+
                         const mappedData = data.map((reg: any) => ({
                             ...reg,
-                            userId: reg.profiles
+                            userId: profileMap[reg.user_id] || {}
                         }));
                         setRegistrations(mappedData);
+                    } else {
+                        setRegistrations([]);
                     }
-                    if (error) throw error;
                 } catch (err) {
-                    console.error("Failed to fetch registrations");
+                    console.error("Failed to fetch registrations", err);
                 } finally {
                     setIsLoadingRegs(false);
                 }
