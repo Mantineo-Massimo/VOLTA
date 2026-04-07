@@ -50,9 +50,23 @@ function AccountContent() {
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Ensure user is loaded
+        if (!user?.id) {
+            setAuthMessage({ type: 'error', text: "SESSIONE NON TROVATA. RICARICA LA PAGINA." });
+            return;
+        }
+
         setIsAuthLoading(true);
+        setAuthMessage(null);
+
         try {
-            const { error } = await supabase
+            // STEP 0: Get fresh user to avoid stale state
+            const { data: { user: freshUser }, error: userError } = await supabase.auth.getUser();
+            if (userError || !freshUser) throw new Error("SESSIONE SCADUTA O NON VALIDA.");
+
+            // STEP 1: Update Profile Table
+            const { error: profileError } = await supabase
                 .from('profiles')
                 .update({
                     first_name: editFirstName,
@@ -61,15 +75,23 @@ function AccountContent() {
                     phone: editPhone,
                     full_name: `${editFirstName} ${editLastName}`
                 })
-                .eq('id', user.id);
+                .eq('id', freshUser.id);
 
-            if (error) throw error;
+            if (profileError) {
+                console.error("Profile Update Error:", profileError);
+                throw new Error("ERRORE DATABASE: " + profileError.message);
+            }
 
-            // Update Auth User Email if changed
-            if (editEmail !== user.email) {
+            // STEP 2: Update Auth Email (if changed)
+            if (editEmail.toLowerCase() !== freshUser.email?.toLowerCase()) {
                 const { error: authError } = await supabase.auth.updateUser({ email: editEmail });
-                if (authError) throw authError;
-                setAuthMessage({ type: 'success', text: "PROFILO AGGIORNATO. CONTROLLA LA NUOVA EMAIL PER CONFERMA." });
+                if (authError) {
+                    console.error("Auth Email Update Error:", authError);
+                    throw new Error("ERRORE AUTH: " + authError.message);
+                }
+                setAuthMessage({ type: 'success', text: "PROFILO AGGIORNATO. CONFERMA IL CAMBIO NELLA TUA NUOVA EMAIL." });
+            } else {
+                setAuthMessage({ type: 'success', text: "PROFILO AGGIORNATO CON SUCCESSO" });
             }
 
             // Refresh local profile state
@@ -82,9 +104,13 @@ function AccountContent() {
                 full_name: `${editFirstName} ${editLastName}`
             });
             setIsEditingProfile(false);
-            setAuthMessage({ type: 'success', text: "PROFILO AGGIORNATO CON SUCCESSO" });
+
         } catch (err: any) {
-            setAuthMessage({ type: 'error', text: err.message?.toUpperCase() || "ERRORE AGGIORNAMENTO" });
+            console.error("Critical Profile Update Failure:", err);
+            setAuthMessage({
+                type: 'error',
+                text: err.message?.toUpperCase() || "ERRORE SCONOSCIUTO DURANTE IL SALVATAGGIO"
+            });
         } finally {
             setIsAuthLoading(false);
         }
