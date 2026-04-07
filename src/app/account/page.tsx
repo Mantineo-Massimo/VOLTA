@@ -393,7 +393,7 @@ function AccountContent() {
 
                     if (uploadError) {
                         console.error("Supabase Storage error", uploadError);
-                        throw new Error("ERRORE STORAGE: Assicurati di aver creato il bucket 'events' pubblico su Supabase.");
+                        throw new Error(`ERRORE STORAGE: ${uploadError.message}. Verifica le 'Policies' del bucket 'events'.`);
                     }
 
                     const { data: { publicUrl } } = supabase.storage
