@@ -44,6 +44,10 @@ function AccountContent() {
     const [editEmail, setEditEmail] = useState("");
     const [editPhone, setEditPhone] = useState("");
 
+    // Auth & UI States
+    const [authMessage, setAuthMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [isAuthLoading, setIsAuthLoading] = useState(false);
+
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsAuthLoading(true);
@@ -294,8 +298,6 @@ function AccountContent() {
 
     const [isSignup, setIsSignup] = useState(mode === "signup");
     const [authName, setAuthName] = useState("");
-    const [authMessage, setAuthMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-    const [isAuthLoading, setIsAuthLoading] = useState(false);
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -521,6 +523,25 @@ function AccountContent() {
     return (
         <div className="min-h-screen bg-black pt-32 pb-24 px-6 md:px-12 font-sans text-white">
             <div className="max-w-7xl mx-auto">
+                <AnimatePresence>
+                    {authMessage && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className={`mb-12 p-6 border text-[11px] uppercase tracking-widest font-bold flex justify-between items-center backdrop-blur-xl ${authMessage.type === 'success' ? 'bg-gold/10 border-gold/40 text-gold shadow-[0_0_50px_rgba(255,184,0,0.1)]' : 'bg-red-500/10 border-red-500/40 text-red-500 shadow-[0_0_50px_rgba(239,68,68,0.1)]'
+                                }`}
+                        >
+                            <div className="flex items-center gap-4">
+                                {authMessage.type === 'success' ? <CheckCircle2 size={16} /> : <Info size={16} />}
+                                <span className="italic">{authMessage.text}</span>
+                            </div>
+                            <button onClick={() => setAuthMessage(null)} className="opacity-40 hover:opacity-100 transition-opacity p-2">
+                                <X size={16} />
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 border-b border-white/5 pb-10">
                     <div>
                         <motion.div
