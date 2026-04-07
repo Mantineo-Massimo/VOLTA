@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Calendar, ArrowRight, Music, Zap } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 const heroImages = [
     "/assets/DSC_0036.JPG",
@@ -16,11 +17,25 @@ const heroImages = [
 export default function Home() {
     const [currentImg, setCurrentImg] = useState(0);
 
+    const [nextEvent, setNextEvent] = useState<any>(null);
+
     useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentImg((prev) => (prev + 1) % heroImages.length);
-        }, 5000);
-        return () => clearInterval(timer);
+        const fetchNextEvent = async () => {
+            try {
+                const supabase = createClient();
+                const { data } = await supabase
+                    .from('events')
+                    .select('*')
+                    .order('event_date', { ascending: true })
+                    .limit(1)
+                    .single();
+
+                if (data) setNextEvent(data);
+            } catch (err) {
+                console.error("Failed to fetch next event");
+            }
+        };
+        fetchNextEvent();
     }, []);
 
     return (
@@ -108,7 +123,7 @@ export default function Home() {
                     className="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-30"
                 >
                     <div className="w-[1px] h-12 bg-white" />
-                </motion.div> section
+                </motion.div>
             </section>
 
             {/* New Section: Next Event Highlight */}
@@ -125,17 +140,20 @@ export default function Home() {
                             <span className="text-gold font-bold uppercase tracking-widest text-sm">Next Experience</span>
                         </div>
                         <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter">
-                            VŌLTA Premiere<br /><span className="font-thin text-white/50 underline decoration-gold underline-offset-8">Messina</span>
+                            {nextEvent?.title || "VŌLTA Premiere"}<br />
+                            <span className="font-thin text-white/50 underline decoration-gold underline-offset-8">
+                                {nextEvent?.location || "Messina"}
+                            </span>
                         </h2>
-                        <p className="text-xl font-thin text-white/80 max-w-md">
-                            Il lancio ufficiale della stagione. Un&apos;esperienza immersiva dove il digital incontra il brutalismo sonoro.
+                        <p className="text-xl font-thin text-white/80 max-w-md line-clamp-3">
+                            {nextEvent?.description || "Il lancio ufficiale della stagione. Un'esperienza immersiva dove il digital incontra il brutalismo sonoro."}
                         </p>
                         <div className="flex flex-col gap-4">
                             <div className="flex items-center gap-4 text-gold/60 uppercase text-sm font-bold tracking-widest">
-                                <Calendar size={18} className="text-gold" /> 4 Aprile 2026
+                                <Calendar size={18} className="text-gold" /> {nextEvent?.date || "In Arrivo"}
                             </div>
                             <div className="flex items-center gap-4 text-gold/60 uppercase text-sm font-bold tracking-widest">
-                                <Music size={18} className="text-gold" /> Exclusive Guest DJ Set
+                                <Music size={18} className="text-gold" /> {nextEvent?.dj || "Exclusive Artist"}
                             </div>
                         </div>
                         <Link href="/events" className="text-gold border-b-2 border-gold self-start font-bold uppercase tracking-widest pb-1 hover:text-white hover:border-white transition-colors">
@@ -150,14 +168,14 @@ export default function Home() {
                         className="relative aspect-square brutalist-border overflow-hidden"
                     >
                         <Image
-                            src="/assets/DSC_0395.JPG"
+                            src={nextEvent?.image || "/assets/DSC_0395.JPG"}
                             alt="Live at VŌLTA"
                             fill
                             className="object-cover grayscale brightness-75 hover:grayscale-0 transition-all duration-700"
                         />
                         <div className="absolute inset-0 bg-gold mix-blend-color opacity-20" />
                         <div className="absolute top-4 right-4 bg-gold text-black px-4 py-2 font-bold uppercase text-xs">
-                            Limited Capacity
+                            {nextEvent?.is_sold_out ? "SOLD OUT" : "Limited Capacity"}
                         </div>
                     </motion.div>
                 </div>
