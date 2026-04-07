@@ -50,6 +50,12 @@ export default function Navbar() {
         }
     }, [isOpen]);
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        setIsLoggedIn(false);
+        setIsOpen(false);
+    };
+
     return (
         <>
             {/* Modern Floating Header */}
@@ -86,9 +92,19 @@ export default function Navbar() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Link href="/account" className="hidden sm:block text-[10px] uppercase font-bold tracking-widest border border-white/20 px-4 py-1.5 rounded-full hover:bg-white hover:text-black transition-all">
-                            {isLoggedIn ? "Account" : "Accedi"}
-                        </Link>
+                        <div className="hidden sm:flex items-center gap-3">
+                            <Link href="/account" className="text-[10px] uppercase font-bold tracking-widest border border-white/20 px-4 py-1.5 rounded-full hover:bg-white hover:text-black transition-all">
+                                {isLoggedIn ? "Area Personale" : "Accedi"}
+                            </Link>
+                            {isLoggedIn && (
+                                <button
+                                    onClick={handleLogout}
+                                    className="text-[10px] uppercase font-bold tracking-widest text-white/40 hover:text-red-500 transition-colors"
+                                >
+                                    LOGOUT
+                                </button>
+                            )}
+                        </div>
                         <button
                             onClick={() => setIsOpen(true)}
                             className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-gold transition-colors"
@@ -116,22 +132,40 @@ export default function Navbar() {
                         </button>
 
                         <div className="flex flex-col gap-8 text-center">
-                            {navLinks.map((link, i) => (
+                            {navLinks.map((link, i) => {
+                                const displayName = (link.name === "Account" && isLoggedIn) ? "Area Personale" : link.name;
+                                return (
+                                    <motion.div
+                                        key={link.name}
+                                        initial={{ y: 20, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        transition={{ delay: i * 0.1 }}
+                                    >
+                                        <Link
+                                            href={link.href}
+                                            onClick={() => setIsOpen(false)}
+                                            className="text-4xl md:text-7xl font-bold uppercase tracking-tighter transition-all hover:text-gold hover:italic"
+                                        >
+                                            {displayName}
+                                        </Link>
+                                    </motion.div>
+                                );
+                            })}
+
+                            {isLoggedIn && (
                                 <motion.div
-                                    key={link.name}
                                     initial={{ y: 20, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
-                                    transition={{ delay: i * 0.1 }}
+                                    transition={{ delay: navLinks.length * 0.1 }}
                                 >
-                                    <Link
-                                        href={link.href}
-                                        onClick={() => setIsOpen(false)}
-                                        className="text-4xl md:text-7xl font-bold uppercase tracking-tighter transition-all hover:text-gold hover:italic"
+                                    <button
+                                        onClick={handleLogout}
+                                        className="text-4xl md:text-7xl font-bold uppercase tracking-tighter transition-all text-white/20 hover:text-red-500 hover:italic"
                                     >
-                                        {link.name}
-                                    </Link>
+                                        LOGOUT
+                                    </button>
                                 </motion.div>
-                            ))}
+                            )}
                         </div>
 
                         {/* Overlay Footer */}
