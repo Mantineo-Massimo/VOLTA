@@ -41,6 +41,7 @@ function AccountContent() {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [editFirstName, setEditFirstName] = useState("");
     const [editLastName, setEditLastName] = useState("");
+    const [editEmail, setEditEmail] = useState("");
     const [editPhone, setEditPhone] = useState("");
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -52,6 +53,7 @@ function AccountContent() {
                 .update({
                     first_name: editFirstName,
                     last_name: editLastName,
+                    email: editEmail,
                     phone: editPhone,
                     full_name: `${editFirstName} ${editLastName}`
                 })
@@ -59,11 +61,19 @@ function AccountContent() {
 
             if (error) throw error;
 
+            // Update Auth User Email if changed
+            if (editEmail !== user.email) {
+                const { error: authError } = await supabase.auth.updateUser({ email: editEmail });
+                if (authError) throw authError;
+                setAuthMessage({ type: 'success', text: "PROFILO AGGIORNATO. CONTROLLA LA NUOVA EMAIL PER CONFERMA." });
+            }
+
             // Refresh local profile state
             setProfile({
                 ...profile,
                 first_name: editFirstName,
                 last_name: editLastName,
+                email: editEmail,
                 phone: editPhone,
                 full_name: `${editFirstName} ${editLastName}`
             });
@@ -733,6 +743,7 @@ function AccountContent() {
                                             onClick={() => {
                                                 setEditFirstName(profile?.first_name || "");
                                                 setEditLastName(profile?.last_name || "");
+                                                setEditEmail(profile?.email || "");
                                                 setEditPhone(profile?.phone || "");
                                                 setIsEditingProfile(true);
                                             }}
@@ -776,6 +787,16 @@ function AccountContent() {
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
+                                                <label className="text-[8px] uppercase tracking-widest text-white/20">Email</label>
+                                                <input
+                                                    required
+                                                    type="email"
+                                                    value={editEmail}
+                                                    onChange={(e) => setEditEmail(e.target.value)}
+                                                    className="w-full bg-white/5 border border-white/10 p-2 text-xs font-bold uppercase tracking-widest focus:border-gold outline-none"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
                                                 <label className="text-[8px] uppercase tracking-widest text-white/20">Telefono</label>
                                                 <input
                                                     required
@@ -809,7 +830,6 @@ function AccountContent() {
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white italic">Febbraio 2026</span>
                                                     <div className="w-1 h-1 bg-gold rounded-full" />
-                                                    <span className="text-[8px] font-bold uppercase tracking-widest text-white/40">Verified</span>
                                                 </div>
                                             </div>
                                         </>
