@@ -278,6 +278,26 @@ function AccountContent() {
         e.preventDefault();
         setAuthMessage(null);
         const formData = new FormData(e.target as HTMLFormElement);
+
+        // Manual Validation
+        const requiredFields = [
+            { id: 'title', label: 'TITOLO' },
+            { id: 'eventDate', label: 'DATA' },
+            { id: 'startTime', label: 'ORARIO INIZIO' },
+            { id: 'location', label: 'LOCATION' },
+            { id: 'dj', label: 'DJ' },
+            { id: 'genre', label: 'GENERE' }
+        ];
+
+        const missingLabels = requiredFields
+            .filter(f => !formData.get(f.id))
+            .map(f => f.label);
+
+        if (missingLabels.length > 0) {
+            setAuthMessage({ type: 'error', text: `MANCANO I CAMPI OBBLIGATORI: ${missingLabels.join(', ')}` });
+            return;
+        }
+
         const eventData: any = {
             // Defaults
             sold_out_type: 'NONE',
@@ -1108,27 +1128,27 @@ function AccountContent() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                             <div className="space-y-2">
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Event Title</label>
-                                                <input required name="title" defaultValue={editingEvent?.title} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all placeholder:opacity-20" placeholder="E.G. UNDERGROUND SESSION" />
+                                                <input name="title" defaultValue={editingEvent?.title} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all placeholder:opacity-20" placeholder="E.G. UNDERGROUND SESSION" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Physical Location</label>
-                                                <input required name="location" defaultValue={editingEvent?.location} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
+                                                <input name="location" defaultValue={editingEvent?.location} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Lead Artist (DJ)</label>
-                                                <input required name="dj" defaultValue={editingEvent?.dj} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
+                                                <input name="dj" defaultValue={editingEvent?.dj} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Musical Narrative</label>
-                                                <input required name="genre" defaultValue={editingEvent?.genre} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
+                                                <input name="genre" defaultValue={editingEvent?.genre} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Select Event Date</label>
-                                                <input required type="date" name="eventDate" defaultValue={editingEvent?.event_date} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
+                                                <input type="date" name="eventDate" defaultValue={editingEvent?.event_date} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Inizio (24h)</label>
-                                                <input required type="time" name="startTime" defaultValue={editingEvent?.start_time || "23:00"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
+                                                <input type="time" name="startTime" defaultValue={editingEvent?.start_time || "23:00"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Access Capacity (Reg Limit)</label>
