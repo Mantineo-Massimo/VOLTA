@@ -485,7 +485,9 @@ function AccountContent() {
                             </span>
                         </motion.div>
                         <h1 className="text-4xl md:text-7xl font-bold uppercase tracking-tighter leading-none italic">
-                            {role === "user" ? `Bentornato, ${profile?.name || user?.email}` : "Management Hub"}
+                            {role === "user" ? (
+                                <>BENTORNATO, <span className="text-gold">{profile?.first_name} {profile?.last_name}</span></>
+                            ) : "Management Hub"}
                         </h1>
                     </div>
 
@@ -653,9 +655,6 @@ function AccountContent() {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="relative aspect-[1.6/1] bg-gradient-to-br from-white/10 to-transparent border border-white/20 p-8 overflow-hidden group backdrop-blur-3xl"
                             >
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <QrCode size={100} strokeWidth={1} />
-                                </div>
                                 <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-gold/10 blur-[50px] rounded-full" />
 
                                 <div className="relative h-full flex flex-col justify-between">
@@ -719,7 +718,7 @@ function AccountContent() {
                                 </div>
                                 <div className="flex justify-between items-end mb-12 relative z-10">
                                     <div>
-                                        <h2 className="text-4xl font-black italic tracking-tighter uppercase leading-none">I Miei <span className="text-gold">Eventi.</span></h2>
+                                        <h2 className="text-4xl font-black italic tracking-tighter uppercase leading-none">Le Mie <span className="text-gold">Prenotazioni.</span></h2>
                                         <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20 mt-3">Storico Partecipazioni e Ticket Attivi</p>
                                     </div>
                                     <div className="text-right">
