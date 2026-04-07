@@ -355,13 +355,12 @@ function AccountContent() {
                     dj: 'dj',
                     genre: 'genre',
                     description: 'description',
-                    entryType: 'entry_type',
+                    entryType: 'entryType',
                     dresscode: 'dresscode',
                     soldOutType: 'sold_out_type',
-                    eventDate: 'event_date',
-                    startTime: 'start_time',
-                    endTime: 'end_time',
-                    regLimit: 'regLimit'
+                    eventDate: 'date',
+                    startTime: 'time',
+                    regLimit: 'reg_limit'
                 };
                 if (mapping[key]) {
                     eventData[mapping[key]] = value;
@@ -618,7 +617,7 @@ function AccountContent() {
                                         <div className="flex items-center gap-4 mt-4">
                                             <p className="text-[10px] uppercase tracking-widest text-white/40 flex items-center gap-2">
                                                 <Users size={12} className="text-gold/40" />
-                                                {event.regsCount || 0} / {event.regLimit} Booking
+                                                {event.regs_count || 0} / {event.reg_limit || 0} Booking
                                             </p>
                                             {event.sold_out_type !== 'NONE' && (
                                                 <span className="text-[8px] font-bold px-2 py-0.5 border border-red-500/50 text-red-500 uppercase">
@@ -1373,7 +1372,7 @@ function AccountContent() {
                                                             </div>
                                                             <div className="space-y-3">
                                                                 <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 ml-1">Max Capacity</label>
-                                                                <input name="regLimit" type="number" required placeholder="E.G. 500" className="w-full bg-white/[0.03] border border-white/10 p-5 text-sm font-bold uppercase tracking-widest focus:border-gold outline-none transition-all" defaultValue={editingEvent?.regLimit} />
+                                                                <input name="regLimit" type="number" required placeholder="E.G. 500" className="w-full bg-white/[0.03] border border-white/10 p-5 text-sm font-bold uppercase tracking-widest focus:border-gold outline-none transition-all" defaultValue={editingEvent?.reg_limit} />
                                                             </div>
                                                         </div>
 
