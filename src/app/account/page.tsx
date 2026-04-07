@@ -279,11 +279,34 @@ function AccountContent() {
         setAuthMessage(null);
         const formData = new FormData(e.target as HTMLFormElement);
 
+        // Manual Recomposition of Date/Time from Selects
+        const day = formData.get('day');
+        const month = formData.get('month');
+        const year = formData.get('year');
+        const hour = formData.get('hour');
+        const minute = formData.get('minute');
+        const endHour = formData.get('endHour');
+        const endMinute = formData.get('endMinute');
+
+        if (day && month && year) {
+            const dateStr = `${year}-${month}-${day}`;
+            formData.set('eventDate', dateStr);
+        }
+        if (hour && minute) {
+            formData.set('startTime', `${hour}:${minute}`);
+        }
+        if (endHour && endMinute) {
+            formData.set('endTime', `${endHour}:${endMinute}`);
+        }
+
         // Manual Validation
         const requiredFields = [
             { id: 'title', label: 'TITOLO' },
-            { id: 'eventDate', label: 'DATA' },
-            { id: 'startTime', label: 'ORARIO INIZIO' },
+            { id: 'day', label: 'GIORNO' },
+            { id: 'month', label: 'MESE' },
+            { id: 'year', label: 'ANNO' },
+            { id: 'hour', label: 'ORA' },
+            { id: 'minute', label: 'MINUTI' },
             { id: 'location', label: 'LOCATION' },
             { id: 'dj', label: 'DJ' },
             { id: 'genre', label: 'GENERE' }
@@ -1142,13 +1165,40 @@ function AccountContent() {
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Musical Narrative</label>
                                                 <input name="genre" defaultValue={editingEvent?.genre} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Select Event Date</label>
-                                                <input type="date" name="eventDate" defaultValue={editingEvent?.event_date} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
+                                            <div className="space-y-4">
+                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Event Date (ITALIANO)</label>
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    <select name="day" defaultValue={editingEvent?.event_date?.split('-')[2] || ""} className="w-full bg-white/[0.02] border border-white/10 p-4 text-xs font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all appearance-none cursor-pointer">
+                                                        <option value="" disabled>Day</option>
+                                                        {Array.from({ length: 31 }, (_, i) => (i + 1).toString().padStart(2, '0')).map(d => <option key={d} value={d}>{d}</option>)}
+                                                    </select>
+                                                    <select name="month" defaultValue={editingEvent?.event_date?.split('-')[1] || ""} className="w-full bg-white/[0.02] border border-white/10 p-4 text-xs font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all appearance-none cursor-pointer">
+                                                        <option value="" disabled>Month</option>
+                                                        {['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'].map(m => (
+                                                            <option key={m} value={m}>{['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC'][parseInt(m) - 1]}</option>
+                                                        ))}
+                                                    </select>
+                                                    <select name="year" defaultValue={editingEvent?.event_date?.split('-')[0] || "2026"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-xs font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all appearance-none cursor-pointer">
+                                                        {['2025', '2026', '2027'].map(y => <option key={y} value={y}>{y}</option>)}
+                                                    </select>
+                                                </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Inizio (24h)</label>
-                                                <input type="time" name="startTime" defaultValue={editingEvent?.start_time || "23:00"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
+                                            <div className="space-y-4">
+                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Inizio & Fine (24H)</label>
+                                                <div className="grid grid-cols-4 gap-2">
+                                                    <select name="hour" defaultValue={editingEvent?.start_time?.split(':')[0] || "23"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-xs font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all appearance-none cursor-pointer">
+                                                        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => <option key={h} value={h}>{h}</option>)}
+                                                    </select>
+                                                    <select name="minute" defaultValue={editingEvent?.start_time?.split(':')[1] || "00"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-xs font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all appearance-none cursor-pointer">
+                                                        {['00', '15', '30', '45'].map(m => <option key={m} value={m}>{m}</option>)}
+                                                    </select>
+                                                    <select name="endHour" defaultValue={editingEvent?.end_time?.split(':')[0] || "05"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-xs font-bold uppercase tracking-tighter focus:border-red-500/50 focus:bg-red-500/5 outline-none transition-all appearance-none cursor-pointer opacity-40">
+                                                        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => <option key={h} value={h}>{h}</option>)}
+                                                    </select>
+                                                    <select name="endMinute" defaultValue={editingEvent?.end_time?.split(':')[1] || "00"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-xs font-bold uppercase tracking-tighter focus:border-red-500/50 focus:bg-red-500/5 outline-none transition-all appearance-none cursor-pointer opacity-40">
+                                                        {['00', '15', '30', '45'].map(m => <option key={m} value={m}>{m}</option>)}
+                                                    </select>
+                                                </div>
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Access Capacity (Reg Limit)</label>
