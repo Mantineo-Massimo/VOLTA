@@ -276,7 +276,7 @@ function AccountContent() {
 
     const handleSaveEvent = async (e: React.FormEvent) => {
         e.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setAuthMessage(null);
         const formData = new FormData(e.target as HTMLFormElement);
         const eventData: any = {
             // Defaults
@@ -298,7 +298,6 @@ function AccountContent() {
                     location: 'location',
                     dj: 'dj',
                     genre: 'genre',
-                    venue: 'venue',
                     description: 'description',
                     entryType: 'entry_type',
                     dresscode: 'dresscode',
@@ -1041,6 +1040,22 @@ function AccountContent() {
                                 </button>
                             </div>
 
+                            {authMessage && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className={`mb-8 p-4 border text-[11px] uppercase tracking-widest font-bold flex justify-between items-center ${authMessage.type === 'success' ? 'bg-gold/10 border-gold/40 text-gold' : 'bg-red-500/10 border-red-500/40 text-red-500'}`}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <Info size={16} />
+                                        <span>{authMessage.text}</span>
+                                    </div>
+                                    <button onClick={() => setAuthMessage(null)} className="opacity-40 hover:opacity-100 transition-opacity p-2">
+                                        <X size={16} />
+                                    </button>
+                                </motion.div>
+                            )}
+
                             <form className="grid grid-cols-1 md:grid-cols-3 gap-12 h-[60vh] overflow-y-auto pr-6 custom-scrollbar" onSubmit={handleSaveEvent}>
                                 <div className="space-y-6 text-left">
                                     <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold/60 italic border-b border-white/5 pb-4">Multimedia Assets</h3>
@@ -1116,14 +1131,6 @@ function AccountContent() {
                                                 <input required type="time" name="startTime" defaultValue={editingEvent?.start_time || "23:00"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Fine (24h)</label>
-                                                <input required type="time" name="endTime" defaultValue={editingEvent?.end_time || "05:00"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Venue Partner</label>
-                                                <input required name="venue" defaultValue={editingEvent?.venue} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
-                                            </div>
-                                            <div className="space-y-2">
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Access Capacity (Reg Limit)</label>
                                                 <input required name="regLimit" type="number" defaultValue={editingEvent?.regLimit} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all" />
                                             </div>
@@ -1166,9 +1173,10 @@ function AccountContent() {
                             </form>
                         </motion.div>
                     </div>
-                )}
-            </AnimatePresence>
-        </div>
+                )
+                }
+            </AnimatePresence >
+        </div >
     );
 }
 
