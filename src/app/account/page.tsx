@@ -276,6 +276,7 @@ function AccountContent() {
 
     const handleSaveEvent = async (e: React.FormEvent) => {
         e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         const formData = new FormData(e.target as HTMLFormElement);
         const eventData: any = {
             // Defaults
@@ -303,7 +304,8 @@ function AccountContent() {
                     dresscode: 'dresscode',
                     soldOutType: 'sold_out_type',
                     eventDate: 'event_date',
-                    startTime: 'start_time'
+                    startTime: 'start_time',
+                    endTime: 'end_time'
                 };
                 if (mapping[key]) {
                     eventData[mapping[key]] = value;
@@ -311,15 +313,17 @@ function AccountContent() {
             }
         });
 
-        // Compute legacy strings for existing UI if data isn't migrated
-        // (Native date for display usually needs formatting)
         if (eventData.event_date) {
             const d = new Date(eventData.event_date);
             const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
-            eventData.date = d.toLocaleDateString('it-IT', options);
+            const formattedDate = d.toLocaleDateString('it-IT', options);
+            // Capitalize first letter of weekday
+            eventData.date = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
         }
         if (eventData.start_time) {
-            eventData.time = `${eventData.start_time} - 05:00`; // Default end time
+            const start = eventData.start_time;
+            const end = eventData.end_time || "05:00";
+            eventData.time = `${start} - ${end}`;
         }
 
         eventData.image = imagePreview || editingEvent?.image || "/assets/DSC_0036.JPG";
@@ -330,12 +334,18 @@ function AccountContent() {
                     .from('events')
                     .update(eventData)
                     .eq('id', editingEvent.id);
-                if (error) throw error;
+                if (error) {
+                    setAuthMessage({ type: 'error', text: "ERRORE UPDATE: " + error.message });
+                    throw error;
+                }
             } else {
                 const { error } = await supabase
                     .from('events')
                     .insert([eventData]);
-                if (error) throw error;
+                if (error) {
+                    setAuthMessage({ type: 'error', text: "ERRORE CREAZIONE: " + error.message });
+                    throw error;
+                }
             }
 
             const { data: updatedData } = await supabase
@@ -1102,8 +1112,12 @@ function AccountContent() {
                                                 <input required type="date" name="eventDate" defaultValue={editingEvent?.event_date} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Opening Time</label>
-                                                <input required type="time" name="startTime" defaultValue={editingEvent?.start_time} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
+                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Inizio (24h)</label>
+                                                <input required type="time" name="startTime" defaultValue={editingEvent?.start_time || "23:00"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Fine (24h)</label>
+                                                <input required type="time" name="endTime" defaultValue={editingEvent?.end_time || "05:00"} className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm font-bold uppercase tracking-tighter focus:border-gold focus:bg-gold/5 outline-none transition-all [color-scheme:dark]" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[9px] font-bold uppercase tracking-widest text-white/30 ml-1">Venue Partner</label>
