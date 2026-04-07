@@ -617,81 +617,111 @@ function AccountContent() {
     );
 
     const renderEvents = () => (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            <div className="lg:col-span-7 flex flex-col gap-10">
-                <div className="flex justify-between items-center bg-white/[0.02] p-8 border border-white/5 backdrop-blur-sm">
-                    <h2 className="text-2xl font-bold uppercase tracking-tighter flex items-center gap-4">
-                        <Activity className="text-gold" size={24} />
-                        Eventi Globali
-                    </h2>
-                    <button
-                        onClick={() => { setEditingEvent(null); setShowEventModal(true); setImagePreview(null); }}
-                        className="bg-gold text-black text-[10px] font-bold uppercase px-8 py-3 tracking-widest hover:invert transition-all transform active:scale-95"
-                    >
-                        CREA EVENTO
-                    </button>
-                </div>
+        <div className="max-w-5xl mx-auto flex flex-col gap-10">
+            <div className="flex justify-between items-center bg-white/[0.02] p-8 border border-white/5 backdrop-blur-sm">
+                <h2 className="text-2xl font-bold uppercase tracking-tighter flex items-center gap-4">
+                    <Activity className="text-gold" size={24} />
+                    Eventi Globali
+                </h2>
+                <button
+                    onClick={() => { setEditingEvent(null); setShowEventModal(true); setImagePreview(null); }}
+                    className="bg-gold text-black text-[10px] font-bold uppercase px-8 py-3 tracking-widest hover:invert transition-all transform active:scale-95"
+                >
+                    CREA EVENTO
+                </button>
+            </div>
 
-                <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4">
+                {isLoading ? (
+                    <div className="p-8 border border-white/5 bg-white/[0.01] animate-pulse h-32" />
+                ) : events.length > 0 ? (
+                    events.map((event) => (
+                        <div
+                            key={event.id}
+                            className="p-8 border border-white/5 bg-white/[0.01] hover:border-white/20 transition-all group"
+                        >
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gold mb-2">{event.date} • {event.location}</p>
+                                    <h3 className="text-2xl font-bold uppercase tracking-tighter">{event.title}</h3>
+                                    <div className="flex items-center gap-4 mt-4">
+                                        <p className="text-[10px] uppercase tracking-widest text-white/40 flex items-center gap-2">
+                                            <Users size={12} className="text-gold/40" />
+                                            {event.regs_count || 0} / {event.reg_limit || 0} Booking
+                                        </p>
+                                        {event.sold_out_type !== 'NONE' && (
+                                            <span className="text-[8px] font-bold px-2 py-0.5 border border-red-500/50 text-red-500 uppercase">
+                                                SOLD OUT {event.sold_out_type}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setImagePreview(null);
+                                            setEditingEvent(event);
+                                            setShowEventModal(true);
+                                        }}
+                                        className="p-3 border border-white/10 hover:border-white/40 text-white/40 hover:text-white transition-all bg-white/5"
+                                    >
+                                        <Edit size={16} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteEvent(event.id);
+                                        }}
+                                        className="p-3 border border-white/10 hover:border-red-500/50 text-white/40 hover:text-red-500 transition-all bg-white/5"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="p-20 border border-dotted border-white/10 text-center opacity-20">
+                        <p className="text-xs uppercase tracking-widest">Nessun evento presente nel database.</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
+    const renderBookings = () => (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div className="lg:col-span-4 flex flex-col gap-6">
+                <div className="flex justify-between items-center bg-white/[0.02] p-6 border border-white/5 backdrop-blur-sm">
+                    <h2 className="text-xl font-bold uppercase tracking-tighter flex items-center gap-3">
+                        <Ticket className="text-gold" size={20} />
+                        Seleziona Evento
+                    </h2>
+                </div>
+                <div className="flex flex-col gap-3">
                     {isLoading ? (
-                        <div className="p-8 border border-white/5 bg-white/[0.01] animate-pulse h-32" />
+                        <div className="p-6 border border-white/5 bg-white/[0.01] animate-pulse h-24" />
                     ) : events.length > 0 ? (
                         events.map((event) => (
                             <div
                                 key={event.id}
                                 onClick={() => setSelectedEventId(event.id)}
-                                className={`p-8 border transition-all cursor-pointer group ${selectedEventId === event.id ? 'border-gold bg-gold/5' : 'border-white/5 bg-white/[0.01] hover:border-white/20'}`}
+                                className={`p-5 border transition-all cursor-pointer group ${selectedEventId === event.id ? 'border-gold bg-gold/5' : 'border-white/5 bg-white/[0.01] hover:border-white/20'}`}
                             >
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gold mb-2">{event.date} • {event.location}</p>
-                                        <h3 className="text-2xl font-bold uppercase tracking-tighter">{event.title}</h3>
-                                        <div className="flex items-center gap-4 mt-4">
-                                            <p className="text-[10px] uppercase tracking-widest text-white/40 flex items-center gap-2">
-                                                <Users size={12} className="text-gold/40" />
-                                                {event.regs_count || 0} / {event.reg_limit || 0} Booking
-                                            </p>
-                                            {event.sold_out_type !== 'NONE' && (
-                                                <span className="text-[8px] font-bold px-2 py-0.5 border border-red-500/50 text-red-500 uppercase">
-                                                    SOLD OUT {event.sold_out_type}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setImagePreview(null);
-                                                setEditingEvent(event);
-                                                setShowEventModal(true);
-                                            }}
-                                            className="p-3 border border-white/10 hover:border-white/40 text-white/40 hover:text-white transition-all bg-white/5"
-                                        >
-                                            <Edit size={16} />
-                                        </button>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteEvent(event.id);
-                                            }}
-                                            className="p-3 border border-white/10 hover:border-red-500/50 text-white/40 hover:text-red-500 transition-all bg-white/5"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </div>
+                                <p className="text-[9px] uppercase tracking-[0.3em] font-medium text-gold mb-1">{event.date}</p>
+                                <h3 className="text-lg font-bold uppercase tracking-tighter">{event.title}</h3>
                             </div>
                         ))
                     ) : (
-                        <div className="p-20 border border-dotted border-white/10 text-center opacity-20">
-                            <p className="text-xs uppercase tracking-widest">Nessun evento presente nel database.</p>
+                        <div className="p-10 border border-dotted border-white/10 text-center opacity-20">
+                            <p className="text-[10px] uppercase tracking-widest">Nessun evento disponibile.</p>
                         </div>
                     )}
                 </div>
             </div>
 
-            <div className="lg:col-span-5 border border-white/10 bg-white/[0.01] flex flex-col p-8 md:p-10 min-h-[600px] relative overflow-hidden backdrop-blur-xl">
+            <div className="lg:col-span-8 border border-white/10 bg-white/[0.01] flex flex-col p-8 md:p-10 min-h-[600px] relative overflow-hidden backdrop-blur-xl">
                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                     <QrCode size={120} />
                 </div>
@@ -768,14 +798,6 @@ function AccountContent() {
                 )}
             </div>
         </div>
-    );
-
-    const renderBookings = () => (
-        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="p-20 border border-dotted border-white/10 text-center opacity-20">
-            <Ticket size={48} className="mx-auto mb-6 text-gold" />
-            <h3 className="text-xl font-bold uppercase tracking-[0.3em] mb-4">Registro Prenotazioni</h3>
-            <p className="text-xs uppercase tracking-widest italic">Modulo in fase di configurazione operativa.</p>
-        </motion.div>
     );
 
     const renderUsers = () => (
