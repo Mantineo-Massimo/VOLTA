@@ -192,7 +192,7 @@ export default function Events() {
                                         <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
                                         {/* Status Badge */}
-                                        <div className="absolute top-6 left-6">
+                                        <div className="absolute top-6 right-6">
                                             <span className={`text-[9px] font-black uppercase px-4 py-1.5 border-2 ${statusColor} backdrop-blur-md`}>
                                                 {statusLabel}
                                             </span>
@@ -230,21 +230,6 @@ export default function Events() {
                                             </div>
                                         </div>
 
-                                        {/* Progress Indicator */}
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between items-end">
-                                                <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em]">Deployment Status</span>
-                                                <span className="text-[9px] font-black text-gold uppercase tracking-widest italic">{Math.round(((event.regs_count || 0) / (event.reg_limit || 1)) * 100)}%</span>
-                                            </div>
-                                            <div className="h-1 bg-white/5 overflow-hidden">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    whileInView={{ width: `${Math.min(100, ((event.regs_count || 0) / (event.reg_limit || 1)) * 100)}%` }}
-                                                    transition={{ duration: 1.5, ease: "easeOut" }}
-                                                    className={`h-full ${isFull ? 'bg-red-500' : 'bg-gold'}`}
-                                                />
-                                            </div>
-                                        </div>
                                     </div>
                                 </motion.div>
                             );
@@ -256,7 +241,7 @@ export default function Events() {
                                 <Music size={40} className="text-gold/20" />
                             </div>
                             <div className="space-y-3">
-                                <h3 className="text-3xl font-black uppercase tracking-tighter italic">No Active Deployments.</h3>
+                                <h3 className="text-3xl font-black uppercase tracking-tighter italic">Nessun Evento Programmato.</h3>
                                 <p className="text-[10px] uppercase font-black tracking-[0.5em] text-white/20">Stiamo preparando la prossima sVŌLTA eccellente.</p>
                             </div>
                         </div>
